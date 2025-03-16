@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=money_tracker
+POSTGRES_USER=wMqLFqFkfMDRHXeDswQmJwmxABsXZUXn
+POSTGRES_PASSWORD=o53YoZrzayJkhJ2T5y6ilENqXNnqGFbLJkPbXgqJw0mGrin8uv7x7ByUwM5aFWja
