@@ -3,6 +3,11 @@
 set -o errexit
 set -o nounset
 
+# Wait until migrations are applied
+until python manage.py showmigrations django_celery_beat | grep '\[X\]'; do
+  echo "Waiting for django_celery_beat migrations..."
+  sleep 2
+done
 
 rm -f './celerybeat.pid'
 exec watchfiles --filter python celery.__main__.main --args '-A config.celery_app beat -l INFO'
