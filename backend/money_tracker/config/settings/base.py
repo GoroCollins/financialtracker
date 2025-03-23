@@ -446,14 +446,3 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
-
-
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "APP": {
-            "client_id": "629967441488-tpvmjqat071k55bg0gpp2nf7eu0ql5ap.apps.googleusercontent.com",
-            "secret": "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",
-            "key": "",
-        },
-    }
-}
