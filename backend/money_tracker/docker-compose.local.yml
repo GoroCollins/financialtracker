@@ -57,6 +57,7 @@ services:
       - redis
       - postgres
       - mailpit
+    user: "1000:1000" 
     ports: []
     command: /start-celeryworker
     environment:
