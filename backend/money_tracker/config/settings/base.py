@@ -5,7 +5,7 @@ import ssl
 from pathlib import Path
 import os
 import environ
-
+from datetime import timedelta
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -84,12 +84,15 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.mfa",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.google", # Google SSO
     "django_celery_beat",
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
     "django_filters", # Added by Collins
+    "dj_rest_auth", # Added by Collins
+    "dj_rest_auth.registration", # Added by Collins
 ]
 
 LOCAL_APPS = [
@@ -379,8 +382,9 @@ SOCIALACCOUNT_FORMS = {"signup": "money_tracker.users.forms.UserSocialSignupForm
 # django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.TokenAuthentication",
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -400,7 +404,6 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
-
 
 sentry_sdk.init(
     dsn="https://0fd85f8c0b69f9fc1bf2ca25fb32356e@o4508947647299584.ingest.us.sentry.io/4508947652149248",
@@ -422,3 +425,35 @@ sentry_sdk.init(
         LoggingIntegration(level="ERROR", event_level="ERROR"),  # Capture logs
     ],
 )
+
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_COOKIE_SECURE = False
+
+REST_AUTH = {
+    'SESSION_LOGIN': True,
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'jwt-auth',
+    'JWT_AUTH_REFRESH_COOKIE': 'refresh-auth',
+    'LOGOUT_ON_PASSWORD_CHANGE': True,
+    'OLD_PASSWORD_FIELD_ENABLED': True,
+    'JWT_AUTH_HTTPONLY': True,
+    'TOKEN_SERIALIZER': 'money_tracker.users.api.serializers.CustomTokenSerializer',
+    'USER_DETAILS_SERIALIZER': 'money_tracker.users.api.serializers.CustomUserDetailsSerializer',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": "629967441488-tpvmjqat071k55bg0gpp2nf7eu0ql5ap.apps.googleusercontent.com",
+            "secret": "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",
+            "key": "",
+        },
+    }
+}
