@@ -9,6 +9,9 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
+from dj_rest_auth.registration.views import VerifyEmailView
+from allauth.account.views import ConfirmEmailView
+# from money_tracker.users.api.serializers import GoogleLogin
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -40,6 +43,11 @@ urlpatterns += [
         SpectacularSwaggerView.as_view(url_name="api-schema"),
         name="api-docs",
     ),
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('dj-rest-auth/account-confirm-email/', VerifyEmailView.as_view(), name='account_email_verification_sent'),
+    path("account-confirm-email/<str:key>/", ConfirmEmailView.as_view(), name="account_confirm_email",)
+    # path('dj-rest-auth/google/', GoogleLogin.as_view(), name='google_login')
 ]
 
 if settings.DEBUG:
