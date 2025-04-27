@@ -437,7 +437,7 @@ REST_AUTH = {
     'JWT_AUTH_REFRESH_COOKIE': 'refresh-auth',
     'LOGOUT_ON_PASSWORD_CHANGE': True,
     'OLD_PASSWORD_FIELD_ENABLED': True,
-    'JWT_AUTH_HTTPONLY': True,
+    'JWT_AUTH_HTTPONLY': False,
     'TOKEN_SERIALIZER': 'money_tracker.users.api.serializers.CustomTokenSerializer',
     'USER_DETAILS_SERIALIZER': 'money_tracker.users.api.serializers.CustomUserDetailsSerializer',
 }
