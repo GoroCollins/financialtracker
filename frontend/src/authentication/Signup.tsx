@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
-import axios from "axios";
+import {axiosInstance} from "./Auth.Service";
+import axios from "axios"; 
 import { useNavigate } from "react-router-dom";
 import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
 import { Eye, EyeOff, Clipboard } from "lucide-react";
@@ -22,7 +23,7 @@ const generatePassword = (length: number = 16): string => {
 
 const signupRequest = async (url: string, { arg }: { arg: SignupFormData }) => {
     try {
-        const response = await axios.post(url, arg);
+        const response = await axiosInstance.post(url, arg);
         return response.data;
     } catch (error: any) {
         if (axios.isAxiosError(error)) {
