@@ -94,12 +94,12 @@ services:
       - '5555:5555'
     command: /start-flower
 
-  frontend:
+  react:
     build: 
       context: ../../frontend/
       dockerfile: Dockerfile.dev
     image: client
-    container_name: money_tracker_local_frontend
+    container_name: money_tracker_local_react
     depends_on:
       - django
     volumes:
