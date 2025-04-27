@@ -93,3 +93,17 @@ services:
     ports:
       - '5555:5555'
     command: /start-flower
+
+  frontend:
+    build: 
+      context: ../../frontend/
+      dockerfile: Dockerfile.dev
+    image: client
+    container_name: money_tracker_local_frontend
+    depends_on:
+      - django
+    volumes:
+      - ../../frontend:/app
+    ports:
+      - '5173:5173'
+
