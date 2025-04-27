@@ -17,6 +17,7 @@ const PublicHomePage: React.FC = () => {
           Track your expenses, manage your budget, and achieve financial freedom with ease.
         </p>
       </div>
+      <footer>© {new Date().getFullYear()} SkyLimTech Inc™ All rights reserved.</footer>
     </div>
   );
 };
