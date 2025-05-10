@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthService } from './Auth.Service';
+import { useAuthService } from './AuthenticationService';
 
 const Logout: React.FC = () => {
   const { logout } = useAuthService();

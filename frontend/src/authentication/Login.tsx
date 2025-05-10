@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Button, Form } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuthService } from "./Auth.Service";
+import { useAuthService } from "./AuthenticationService";
 
 interface LoginFormInputs {
   username: string;

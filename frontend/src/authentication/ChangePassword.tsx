@@ -1,4 +1,4 @@
-import { axiosInstance}  from "./Auth.Service";  // Use the existing axios instance
+import { axiosInstance}  from "./AuthenticationService";  // Use the existing axios instance
 
 export const changePassword = async (oldPassword: string, newPassword: string) => {
   try {

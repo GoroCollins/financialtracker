@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
-import {axiosInstance} from "./Auth.Service";
+import {axiosInstance} from "./AuthenticationService";
 import axios from "axios"; 
 import { useNavigate } from "react-router-dom";
 import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
