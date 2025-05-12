@@ -9,6 +9,11 @@ const PublicHomePage: React.FC = () => {
           Sign Up
         </Link>
       </div>
+      <div className="absolute top-4 left-4">
+        <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+          Log in
+        </Link>
+      </div>
 
       {/* Main Content */}
       <div className="text-center p-6 bg-white shadow-md rounded-lg max-w-md">
