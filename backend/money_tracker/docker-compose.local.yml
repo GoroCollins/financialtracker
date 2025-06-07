@@ -48,7 +48,6 @@ services:
     volumes:
       - money_tracker_local_redis_data:/data
     
-
   celeryworker:
     <<: *django
     image: money_tracker_local_celeryworker
@@ -98,7 +97,7 @@ services:
     build: 
       context: ../../frontend/
       dockerfile: Dockerfile.dev
-    image: client
+    image: money_tracker_local_react
     container_name: money_tracker_local_react
     depends_on:
       - django
