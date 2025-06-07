@@ -5,12 +5,12 @@ whitenoise==6.8.2  # https://github.com/evansd/whitenoise
 redis==5.2.1  # https://github.com/redis/redis-py
 hiredis==3.1.0  # https://github.com/redis/hiredis-py
 celery==5.4.0  # pyup: < 6.0  # https://github.com/celery/celery
-django-celery-beat==2.7.0  # https://github.com/celery/django-celery-beat
+django-celery-beat==2.8.1  # https://github.com/celery/django-celery-beat
 flower==2.0.1  # https://github.com/mher/flower
 
 # Django
 # ------------------------------------------------------------------------------
-django==5.0.11  # pyup: < 5.1  # https://www.djangoproject.com/
+django==5.2.2  # pyup: < 5.1  # https://www.djangoproject.com/
 django-environ==0.12.0  # https://github.com/joke2k/django-environ
 django-model-utils==5.0.0  # https://github.com/jazzband/django-model-utils
 django-allauth[mfa] # https://github.com/pennersr/django-allauth
@@ -18,11 +18,11 @@ django-crispy-forms==2.3  # https://github.com/django-crispy-forms/django-crispy
 crispy-bootstrap5==2024.10  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-redis==5.4.0  # https://github.com/jazzband/django-redis
 # Django REST Framework
-djangorestframework==3.15.2  # https://github.com/encode/django-rest-framework
+djangorestframework==3.16.0  # https://github.com/encode/django-rest-framework
 django-cors-headers # https://github.com/adamchainz/django-cors-headers
 dj-rest-auth #https://pypi.org/project/dj-rest-auth/
 dj-rest-auth[with_social] #https://pypi.org/project/dj-rest-auth/
-djangorestframework-simplejwt==5.3.1 #https://pypi.org/project/djangorestframework-simplejwt/
+djangorestframework-simplejwt==5.5.0 #https://pypi.org/project/djangorestframework-simplejwt/
 # DRF-spectacular for api documentation
 drf-spectacular==0.28.0  # https://github.com/tfranzel/drf-spectacular
 # Custom packages/libraries
