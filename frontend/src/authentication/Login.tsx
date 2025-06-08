@@ -32,7 +32,7 @@ const Login: React.FC = () => {
       await login(data.username, data.password);
       
       // Navigate to the previous page or home if login is successful
-      navigate(state?.from?.pathname || "/");
+      navigate(state?.from?.pathname || "/home");
       
       // Reset the form
       reset();
