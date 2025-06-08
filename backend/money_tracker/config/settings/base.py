@@ -457,3 +457,5 @@ SIMPLE_JWT = {
 }
 
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+ACCOUNT_ADAPTER = 'money_tracker.users.adapters.CustomAccountAdapter'
