@@ -5,6 +5,7 @@ import typing
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 
 if typing.TYPE_CHECKING:
     from allauth.socialaccount.models import SocialLogin
@@ -46,3 +47,21 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
                 if last_name := data.get("last_name"):
                     user.name += f" {last_name}"
         return user
+
+class CustomAccountAdapter(DefaultAccountAdapter):
+    def send_confirmation_mail(self, request, emailconfirmation, signup):
+        current_site = get_current_site(request)
+        frontend_base_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        activate_url = f"{frontend_base_url}/confirm-email/{emailconfirmation.key}"
+        ctx = {
+            "user": emailconfirmation.email_address.user,
+            "activate_url": activate_url,
+            "current_site": current_site,
+            "key": emailconfirmation.key,
+        }
+        if signup:
+            email_template = 'account/email/email_confirmation_signup'
+        else:
+            email_template = 'account/email/email_confirmation'
+
+        self.send_mail(email_template, emailconfirmation.email_address.email, ctx)
