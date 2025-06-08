@@ -49,7 +49,7 @@ axiosInstance.interceptors.response.use(
             const newAccessToken = refreshResponse.data.access;
             if (newAccessToken) {
               // Save new token
-              Cookies.set('jwt-auth', newAccessToken);
+              Cookies.set('jwt-auth', newAccessToken); // add this for HTTPS { secure: true, sameSite: 'strict' }
               axiosInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
   
               // Update the original request with new token and retry it
@@ -76,6 +76,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   user: User | null;
+  loading: boolean;
 }
 
 interface User {
@@ -91,6 +92,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
 // Handle login
 const login = async (username: string, password: string) => {
@@ -105,8 +107,8 @@ const login = async (username: string, password: string) => {
   
         if (access && refresh) {
           axiosInstance.defaults.headers['Authorization'] = `Bearer ${access}`;
-          Cookies.set('jwt-auth', access);
-          Cookies.set('refresh-auth', refresh);  // <-- Save refresh token too
+          Cookies.set('jwt-auth', access); // add this for HTTPS { secure: true, sameSite: 'strict' }
+          Cookies.set('refresh-auth', refresh);  // <-- Save refresh token too add this for HTTPS { secure: true, sameSite: 'strict' }
           setUser(user);
           setIsAuthenticated(true);
         }
@@ -145,6 +147,7 @@ const login = async (username: string, password: string) => {
       setIsAuthenticated(true);
       // Optionally, fetch user data here if it's not already in cookies
     }
+    setLoading(false); // Done loading
   }, []);
 
   const value = useMemo(
@@ -153,11 +156,12 @@ const login = async (username: string, password: string) => {
       logout,
       isAuthenticated,
       user,
+      loading
     }),
     [isAuthenticated, user] // Dependencies
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 // Custom hook to use the AuthService
