@@ -4,8 +4,11 @@ import React, { createContext, useContext, useMemo, ReactNode, useState, useEffe
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const ACCESS_JWT_COOKIE_NAME = 'jwt-auth';
+const REFRESH_JWT_COOKIE_NAME = 'refresh-auth';
+const CSRF_COOKIE_NAME = 'csrftoken';
 
-const csrfToken = Cookies.get('csrftoken');
+const csrfToken = Cookies.get(CSRF_COOKIE_NAME);
 
 // Create an axios instance
 export const axiosInstance = axios.create({
@@ -20,7 +23,7 @@ export const axiosInstance = axios.create({
 // Add a request interceptor to ensure the CSRF token is always up-to-date
 axiosInstance.interceptors.request.use(
   (config) => {
-    const updatedCsrfToken = Cookies.get('csrftoken');  // Get the latest CSRF token before each request
+    const updatedCsrfToken = Cookies.get(CSRF_COOKIE_NAME);  // Get the latest CSRF token before each request
     if (updatedCsrfToken) {
       config.headers['X-CSRFToken'] = updatedCsrfToken;
     }
@@ -39,7 +42,7 @@ axiosInstance.interceptors.response.use(
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;  // Mark request so we don't retry infinitely
   
-        const refreshToken = Cookies.get('refresh-auth');
+        const refreshToken = Cookies.get(REFRESH_JWT_COOKIE_NAME);
         if (refreshToken) {
           try {
             const refreshResponse = await axiosInstance.post('/dj-rest-auth/token/refresh/', {
@@ -49,7 +52,7 @@ axiosInstance.interceptors.response.use(
             const newAccessToken = refreshResponse.data.access;
             if (newAccessToken) {
               // Save new token
-              Cookies.set('jwt-auth', newAccessToken); // add this for HTTPS { secure: true, sameSite: 'strict' }
+              Cookies.set(ACCESS_JWT_COOKIE_NAME, newAccessToken); // add this for HTTPS { secure: true, sameSite: 'strict' }
               axiosInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`;
   
               // Update the original request with new token and retry it
@@ -59,8 +62,8 @@ axiosInstance.interceptors.response.use(
           } catch (refreshError) {
             console.error("Token refresh failed", refreshError);
             // Refresh also failed — logout user
-            Cookies.remove('jwt-auth');
-            Cookies.remove('refresh-auth');
+            Cookies.remove(ACCESS_JWT_COOKIE_NAME);
+            Cookies.remove(REFRESH_JWT_COOKIE_NAME);
             window.location.href = '/login';  // Force redirect to login
           }
         } else {
@@ -107,8 +110,8 @@ const login = async (username: string, password: string) => {
   
         if (access && refresh) {
           axiosInstance.defaults.headers['Authorization'] = `Bearer ${access}`;
-          Cookies.set('jwt-auth', access); // add this for HTTPS { secure: true, sameSite: 'strict' }
-          Cookies.set('refresh-auth', refresh);  // <-- Save refresh token too add this for HTTPS { secure: true, sameSite: 'strict' }
+          Cookies.set(ACCESS_JWT_COOKIE_NAME, access); // add this for HTTPS { secure: true, sameSite: 'strict' }
+          Cookies.set(REFRESH_JWT_COOKIE_NAME, refresh);  // <-- Save refresh token too add this for HTTPS { secure: true, sameSite: 'strict' }
           setUser(user);
           setIsAuthenticated(true);
         }
@@ -130,8 +133,8 @@ const login = async (username: string, password: string) => {
   
       // Remove the Authorization header and clear the state
       delete axiosInstance.defaults.headers['Authorization'];
-      Cookies.remove('jwt-auth');  // Remove token from cookies
-      Cookies.remove('refresh-auth') 
+      Cookies.remove(ACCESS_JWT_COOKIE_NAME);  // Remove token from cookies
+      Cookies.remove(REFRESH_JWT_COOKIE_NAME);  // Remove refresh token from cookies
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
@@ -141,7 +144,7 @@ const login = async (username: string, password: string) => {
 
   // Persist login state across page reloads
   useEffect(() => {
-    const token = Cookies.get('jwt-auth');
+    const token = Cookies.get(ACCESS_JWT_COOKIE_NAME);
     if (token) {
       axiosInstance.defaults.headers['Authorization'] = `Bearer ${token}`;
       setIsAuthenticated(true);
