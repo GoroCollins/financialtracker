@@ -142,13 +142,23 @@ const login = async (username: string, password: string) => {
     }
   };
 
+const fetchCurrentUser = async () => {
+  try {
+    const response = await axiosInstance.get('/dj-rest-auth/user/');
+    setUser(response.data);
+    return { user };
+  } catch (error) {
+    console.error('Failed to fetch user', error);
+    logout();  // Optional: logout if user fetch fails
+  }
+};
   // Persist login state across page reloads
   useEffect(() => {
     const token = Cookies.get(ACCESS_JWT_COOKIE_NAME);
     if (token) {
       axiosInstance.defaults.headers['Authorization'] = `Bearer ${token}`;
       setIsAuthenticated(true);
-      // Optionally, fetch user data here if it's not already in cookies
+      fetchCurrentUser(); // Optionally, fetch user data here if it's not already in cookies
     }
     setLoading(false); // Done loading
   }, []);
