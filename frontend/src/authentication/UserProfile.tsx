@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import useSWR from 'swr';
 import { axiosInstance } from './AuthenticationService';
 import { Button, Form } from 'react-bootstrap';
-import placeholderProfileImage from "../../assets/placeholder.png";
+import placeholderProfileImage from "../assets/placeholder.png";
 
 interface UserProfileForm {
   username: string;
