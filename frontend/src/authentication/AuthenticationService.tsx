@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosResponse, AxiosInstance} from "axios";
 import Cookies from 'js-cookie';
 import React, { createContext, useContext, useMemo, ReactNode, useState, useEffect } from "react";
 
@@ -11,7 +11,7 @@ const CSRF_COOKIE_NAME = 'csrftoken';
 const csrfToken = Cookies.get(CSRF_COOKIE_NAME);
 
 // Create an axios instance
-export const axiosInstance = axios.create({
+export const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_URL,
   withCredentials: true,
   headers: {
@@ -90,6 +90,15 @@ interface User {
   // Add other user properties as needed
 }
 
+interface LoginResponse {
+  user: User;
+  access: string;  // Access token
+  refresh: string;  // Refresh token
+}
+
+interface LogoutResponse {
+  detail: string;
+}
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -98,9 +107,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
 // Handle login
-const login = async (username: string, password: string) => {
+const login = async (username: string, password: string): Promise<{ user: User }> => {
     try {
-      const response = await axiosInstance.post(`/dj-rest-auth/login/`, {
+      const response: AxiosResponse<LoginResponse> = await axiosInstance.post(`/dj-rest-auth/login/`, {
         username,
         password,
       });
@@ -126,20 +135,22 @@ const login = async (username: string, password: string) => {
   };
 
   // Handle logout
-  const logout = async () => {
+  const logout = async (): Promise<void>  => {
     try {
-      await axiosInstance.post(`/dj-rest-auth/logout/`);
-      console.log("Logged out successfully");
-  
-      // Remove the Authorization header and clear the state
-      delete axiosInstance.defaults.headers['Authorization'];
-      Cookies.remove(ACCESS_TOKEN_COOKIE);  // Remove token from cookies
-      Cookies.remove(REFRESH_TOKEN_COOKIE);  // Remove refresh token from cookies
-      setUser(null);
-      setIsAuthenticated(false);
-    } catch (error) {
-      console.error("Logout failed:", error);
+      const response: AxiosResponse<LogoutResponse> = await axiosInstance.post(`/dj-rest-auth/logout/`);
+      if (response.status === 200) {
+        console.log("Logged out successfully");
+        delete axiosInstance.defaults.headers["Authorization"];
+        Cookies.remove(ACCESS_TOKEN_COOKIE);  // Remove token from cookies
+        Cookies.remove(REFRESH_TOKEN_COOKIE);  // Remove refresh token from cookies
+        setUser(null);
+        setIsAuthenticated(false);
+    } else {
+      throw new Error("Logout failed.");
     }
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
   };
 
 const fetchCurrentUser = async () => {
