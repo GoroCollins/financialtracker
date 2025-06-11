@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
+import UserProfile from './authentication/UserProfile';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
@@ -79,6 +80,7 @@ const Home: React.FC = () => {
           Form submitted successfully!
         </div>
       )}
+      <UserProfile />
     </div>
   );
 };
