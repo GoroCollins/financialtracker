@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer[User]):
         }
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):
-    profile_image = serializers.ImageField(read_only=True)
+    profile_image = serializers.ImageField(required=False) # read_only=True
     name = serializers.CharField()
 
     class Meta:
