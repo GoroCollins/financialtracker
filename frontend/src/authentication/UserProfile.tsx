@@ -30,7 +30,7 @@ const UserProfile: React.FC = () => {
 
   const onSubmit = async (data: UserProfileForm) => {
     const formData = new FormData();
-    formData.append('username', data.username);
+    //formData.append('username', data.username);
     formData.append('email', data.email);
     formData.append('name', data.name);
     
