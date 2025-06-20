@@ -1,86 +1,70 @@
-import React, { useState } from 'react';
-import { z } from 'zod';
-import UserProfile from './authentication/UserProfile';
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
-  age: z.coerce.number().int().positive({ message: 'Age must be a positive number' }),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import React, { useState, useRef, useEffect } from 'react';
+import { LogOut } from 'lucide-react';
+import { useUserProfile } from './authentication/useUserProfile';
+import placeholderProfileImage from './assets/placeholder.png';
+import { useNavigate } from 'react-router-dom';
 
 const Home: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({ name: '', age: 0 });
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const { profile, isLoading, isError } = useUserProfile();
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleLogout = () => {
+    setShowDropdown(false);
+    navigate('/logout');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(false);
-
-    const parsed = formSchema.safeParse(formData);
-
-    if (!parsed.success) {
-      const fieldErrors: typeof errors = {};
-      parsed.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0] as keyof FormData] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-    } else {
-      setErrors({});
-      setSubmitted(true);
-      console.log('Validated data:', parsed.data);
-    }
+  const handleManageProfile = () => {
+    setShowDropdown(false);
+    navigate('/userprofile');
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const profileImageUrl = profile?.profile_image || placeholderProfileImage;
 
   return (
-    <div className="container mt-5">
-      <h2>Welcome to the Home Page</h2>
-      <form onSubmit={handleSubmit} className="mt-4">
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">Name:</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            className="form-control"
-          />
-          {errors.name && <div className="text-danger">{errors.name}</div>}
-        </div>
+    <div className="container mt-5 position-relative">
+      <div className="position-absolute top-0 end-0 p-3" ref={dropdownRef}>
+        <img
+          src={profileImageUrl}
+          alt="Profile"
+          width={36}
+          height={36}
+          className="rounded-circle cursor-pointer border"
+          style={{ objectFit: 'cover' }}
+          onClick={() => setShowDropdown(prev => !prev)}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = placeholderProfileImage;
+          }}
+        />
+        {showDropdown && (
+          <div className="dropdown-menu show position-absolute end-0 mt-2 p-2 border rounded bg-white shadow">
+            <button className="dropdown-item" onClick={handleManageProfile}>
+              Manage User Profile
+            </button>
+            <button
+              className="dropdown-item d-flex align-items-center gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut size={18} /> Logout
+            </button>
+          </div>
+        )}
+      </div>
 
-        <div className="mb-3">
-          <label htmlFor="age" className="form-label">Age:</label>
-          <input
-            id="age"
-            name="age"
-            type="number"
-            value={formData.age}
-            onChange={handleChange}
-            className="form-control"
-          />
-          {errors.age && <div className="text-danger">{errors.age}</div>}
-        </div>
-
-        <button type="submit" className="btn btn-primary">Submit</button>
-      </form>
-
-      {submitted && (
-        <div className="alert alert-success mt-3">
-          Form submitted successfully!
-        </div>
-      )}
-      <UserProfile />
+      <h2 className="pt-4">Welcome to the Home Page</h2>
+      {isLoading && <p>Loading profile...</p>}
+      {isError && <p className="text-danger">Failed to load user profile.</p>}
     </div>
   );
 };
