@@ -9,6 +9,11 @@ import Home from "./Home";
 import { ProtectedRoute } from "./ProtectedRoutes";
 import Logout from "./authentication/Logout";
 import UserProfile from "./authentication/UserProfile";
+import ChangePassword from "./authentication/ChangePassword";
+import AppLayout from "./AppLayout";
+import CurrenciesList from "./currencies/CurrenciesList";
+import CreateCurrency from "./currencies/NewCurrency";
+import CurrencyDetail from "./currencies/CurrencyDetail";
 const RoutesConfig: React.FC = () => {
   return (
     <Routes>
@@ -17,9 +22,17 @@ const RoutesConfig: React.FC = () => {
       <Route path="/verify-email" element={<VerifyEmailNotice />} />
       <Route path="/confirm-email/:key" element={<ConfirmEmail />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/logout" element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-      <Route path="/userprofile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      {/* Protected Routes under AppLayout */}
+      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route path="/home" element={<Home />} />
+      <Route path="/userprofile" element={<UserProfile />} />
+      <Route path="/changepassword" element={<ChangePassword />} />
+      <Route path="/currencies" element={<CurrenciesList />} /> 
+      <Route path="/currencies/create" element={<CreateCurrency />} />
+      <Route path="/currencies/:code" element={<CurrencyDetail />} />
+      {/* Add more protected routes here */}
+      </Route>
     </Routes>
   );
 }
