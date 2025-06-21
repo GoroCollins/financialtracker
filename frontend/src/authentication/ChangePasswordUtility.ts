@@ -14,6 +14,6 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
       throw new Error("Password change failed.");
     }
   } catch (error: any) {
-    throw error.response?.data?.detail || error.message;
+    throw error;
   }
 };
