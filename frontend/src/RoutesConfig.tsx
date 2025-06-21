@@ -14,6 +14,7 @@ import AppLayout from "./AppLayout";
 import CurrenciesList from "./currencies/CurrenciesList";
 import CreateCurrency from "./currencies/NewCurrency";
 import CurrencyDetail from "./currencies/CurrencyDetail";
+import CreateExchangeRate from "./currencies/NewExchangeRate";
 const RoutesConfig: React.FC = () => {
   return (
     <Routes>
@@ -31,6 +32,7 @@ const RoutesConfig: React.FC = () => {
       <Route path="/currencies" element={<CurrenciesList />} /> 
       <Route path="/currencies/create" element={<CreateCurrency />} />
       <Route path="/currencies/:code" element={<CurrencyDetail />} />
+      <Route path="/currencies/:code/exchange-rate/create" element={<CreateExchangeRate />} />
       {/* Add more protected routes here */}
       </Route>
     </Routes>
