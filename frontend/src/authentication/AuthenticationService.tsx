@@ -145,6 +145,7 @@ const login = async (username: string, password: string): Promise<{ user: User }
         delete axiosInstance.defaults.headers["Authorization"];
         Cookies.remove(ACCESS_TOKEN_COOKIE);  // Remove token from cookies
         Cookies.remove(REFRESH_TOKEN_COOKIE);  // Remove refresh token from cookies
+        Cookies.remove(CSRF_COOKIE_NAME);  //  Remove CSRF token if needed
         setUser(null);
         setIsAuthenticated(false);
         toast.success('Logged out successfully.');
