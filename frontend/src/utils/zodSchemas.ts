@@ -6,4 +6,12 @@ export const CurrencySchema = z.object({
   is_local: z.boolean(),
 });
 
+export const ExchangeRateSchema = z.object({
+  currency: z.string().min(1, 'Currency is required'),
+  rate: z
+    .number({ invalid_type_error: 'Rate must be a number' })
+    .min(0.1, 'Rate must be at least 0.1'),
+});
+
 export type CurrencyFormData = z.infer<typeof CurrencySchema>;
+export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
