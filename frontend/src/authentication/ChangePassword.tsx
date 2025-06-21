@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { changePassword } from './ChangePasswordUtility';
-import useSWR from 'swr';
-import { axiosInstance } from './AuthenticationService';
+// import useSWR from 'swr';
+// import { axiosInstance } from './AuthenticationService';
 import { useNavigate } from 'react-router-dom';
 
 type FormInputs = {
