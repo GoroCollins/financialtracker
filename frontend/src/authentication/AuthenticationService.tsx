@@ -139,7 +139,6 @@ const login = async (username: string, password: string): Promise<{ user: User }
     try {
       const response: AxiosResponse<LogoutResponse> = await axiosInstance.post(`/dj-rest-auth/logout/`);
       if (response.status === 200) {
-        console.log("Logged out successfully");
         delete axiosInstance.defaults.headers["Authorization"];
         Cookies.remove(ACCESS_TOKEN_COOKIE);  // Remove token from cookies
         Cookies.remove(REFRESH_TOKEN_COOKIE);  // Remove refresh token from cookies
