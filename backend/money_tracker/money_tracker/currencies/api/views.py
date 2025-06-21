@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework import status
 from django.http import Http404
 import logging
@@ -16,82 +16,79 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 logger = logging.getLogger(__name__)
 # Create your views here.
 
+
 class CurrencyViewSet(viewsets.ModelViewSet):
-    queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
-    permission_classes = [IsAuthenticated]  # Authenticate access
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['is_local']  # Enable filtering by `is_local`
-    
+    filterset_fields = ['is_local']
+
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return self.queryset.filter(created_by=self.request.user)  # ✅ Only their own assets
-        return self.queryset.none()
+            return Currency.objects.filter(created_by=self.request.user)
+        return Currency.objects.none()
 
-    def perform_create(self, serializer):
-        """Handles currency creation (created_by is already set in serializer)."""
-        try:
-            serializer.save()  # Don't set `created_by` here; serializer already does it
-        except IntegrityError:
-            raise ValidationError({"is_local": ["Only one local currency can exist."]})
-        except ValidationError as e:
-            raise ValidationError(e.detail)  # Return DRF's ValidationError (400)
-
-    def perform_update(self, serializer):
-        """Handles currency updates, assigning `modified_by` to request.user."""
-        try:
-            serializer.save(modified_by=self.request.user)  # ✅ Pass it in `save()`
-        except IntegrityError:
-            raise ValidationError({"is_local": ["Only one local currency can exist."]})
-        except ValidationError as e:
-            raise ValidationError(e.detail) # Return DRF's ValidationError (400)
-    
     def get_serializer_context(self):
-        """Pass request to serializer context to access request.user"""
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
+
+    def perform_create(self, serializer):
+        try:
+            serializer.save()
+        except IntegrityError as e:
+            logger.error(f"IntegrityError on create: {str(e)}")
+            raise DRFValidationError({"is_local": ["Only one local currency can exist."]})
+        except DRFValidationError as e:
+            logger.error(f"ValidationError on create: {e.detail}")
+            raise
+
+    def perform_update(self, serializer):
+        try:
+            serializer.save(modified_by=self.request.user)
+        except IntegrityError as e:
+            logger.error(f"IntegrityError on update: {str(e)}")
+            raise DRFValidationError({"is_local": ["Only one local currency can exist."]})
+        except DRFValidationError as e:
+            logger.error(f"ValidationError on update: {e.detail}")
+            raise
 
 class ExchangeRateViewSet(viewsets.ModelViewSet):
-    queryset = ExchangeRate.objects.select_related("currency", "created_by", "modified_by").all()
     serializer_class = ExchangeRateSerializer
-    permission_classes = [IsAuthenticated]  # Authenticate access
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['currency']  # Enable filtering by `currency`
-    
+    filterset_fields = ['currency']
+
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return self.queryset.filter(created_by=self.request.user)  # ✅ Only their own assets
-        return self.queryset.none()
+        qs = ExchangeRate.objects.select_related("currency", "created_by", "modified_by")
+        if self.request.user.is_superuser:
+            return qs.all()
+        return qs.filter(created_by=self.request.user)
 
     def get_serializer_context(self):
-        """Pass request context to the serializer for setting `modified_by`."""
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
 
     def perform_create(self, serializer):
-        """Handles exchange rate creation, assigning `created_by` to request.user."""
         try:
             serializer.save(created_by=self.request.user)
-        except ValidationError as e:
+        except DRFValidationError as e:
             logger.error(f"ValidationError while creating exchange rate: {str(e)}")
-            raise ValidationError(e.detail)
+            raise DRFValidationError(e.detail if hasattr(e, 'detail') else str(e))
 
     def perform_update(self, serializer):
-        """Handles exchange rate updates, assigning `modified_by` to request.user if there are changes."""
         instance = self.get_object()
         data = serializer.validated_data
-
-        # Check if anything actually changed
         has_changes = any(getattr(instance, field) != value for field, value in data.items())
-        
+
         if has_changes:
             try:
                 serializer.save(modified_by=self.request.user)
-            except ValidationError as e:
+            except DRFValidationError as e:
                 logger.error(f"ValidationError while updating exchange rate: {str(e)}")
-                raise ValidationError(e.detail)
+                raise DRFValidationError(e.detail if hasattr(e, 'detail') else str(e))
+
     
     # def perform_destroy(self, instance):
     #     """Prevent deletion if the exchange rate was created on the user's join date."""
