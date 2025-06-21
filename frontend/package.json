@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
     "@types/js-cookie": "^3.0.6",
     "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
@@ -20,15 +21,17 @@
     "react-dom": "^19.0.0",
     "react-error-boundary": "^5.0.0",
     "react-hook-form": "^7.54.2",
+    "react-router-bootstrap": "^0.26.3",
     "react-router-dom": "^7.3.0",
     "swr": "^2.3.3",
-    "zod": "^3.25.56",
+    "zod": "^3.25.67",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/react-router-bootstrap": "^0.26.8",
     "@types/zxcvbn": "^4.4.5",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.21.0",
