@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { CurrencySchema, CurrencyFormData } from '../utils/zodSchemas';
 import { axiosInstance } from '../authentication/AuthenticationService';
+import { toast } from 'react-hot-toast'; // ✅ toast import
 
 interface ExchangeRate {
   id: number;
@@ -39,13 +40,26 @@ export default function CurrencyDetail() {
   }, [code, reset]);
 
   const onSubmit = async (data: CurrencyFormData) => {
-    await axiosInstance.put(`/api/currencies/currencies/${code}/`, data);
-    navigate('/currencies');
+    try {
+      await axiosInstance.put(`/api/currencies/currencies/${code}/`, data);
+      toast.success('Currency updated successfully');
+      navigate('/currencies');
+    } catch (error) {
+      toast.error('Failed to update currency');
+    }
   };
 
   const handleDelete = async () => {
-    await axiosInstance.delete(`/api/currencies/currencies/${code}/`);
-    navigate('/currencies');
+    const confirmed = window.confirm('Are you sure you want to delete this currency?');
+    if (!confirmed) return;
+
+    try {
+      await axiosInstance.delete(`/api/currencies/currencies/${code}/`);
+      toast.success('Currency deleted successfully');
+      navigate('/currencies');
+    } catch (error) {
+      toast.error('Failed to delete currency');
+    }
   };
 
   return (

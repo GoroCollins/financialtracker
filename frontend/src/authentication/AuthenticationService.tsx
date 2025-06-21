@@ -1,6 +1,7 @@
 import axios, {AxiosResponse, AxiosInstance} from "axios";
 import Cookies from 'js-cookie';
 import React, { createContext, useContext, useMemo, ReactNode, useState, useEffect } from "react";
+import { toast } from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -123,6 +124,7 @@ const login = async (username: string, password: string): Promise<{ user: User }
           Cookies.set(REFRESH_TOKEN_COOKIE, refresh);  // <-- Save refresh token too add this for HTTPS { secure: true, sameSite: 'strict' }
           setUser(user);
           setIsAuthenticated(true);
+          toast.success(`Welcome, ${user.username}!`);
         }
   
         return { user };
@@ -130,6 +132,7 @@ const login = async (username: string, password: string): Promise<{ user: User }
         throw new Error("Login failed.");
       }
     } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Login failed.');
       throw error.response?.data?.detail || error.message;
     }
   };
@@ -144,11 +147,12 @@ const login = async (username: string, password: string): Promise<{ user: User }
         Cookies.remove(REFRESH_TOKEN_COOKIE);  // Remove refresh token from cookies
         setUser(null);
         setIsAuthenticated(false);
+        toast.success('Logged out successfully.');
     } else {
       throw new Error("Logout failed.");
     }
   } catch (error) {
-    console.error("Logout failed:", error);
+    toast.error('Logout failed. Please try again.');
   }
   };
 

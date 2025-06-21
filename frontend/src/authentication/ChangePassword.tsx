@@ -1,20 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { changePassword } from './ChangePasswordUtility';
-// import useSWR from 'swr';
-// import { axiosInstance } from './AuthenticationService';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 type FormInputs = {
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
 };
-
-// const fetchUser = async () => {
-//   const res = await axiosInstance.get('/dj-rest-auth/user/');
-//   return res.data;
-// };
 
 const ChangePassword: React.FC = () => {
   const {
@@ -25,39 +19,30 @@ const ChangePassword: React.FC = () => {
     reset,
   } = useForm<FormInputs>();
 
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-//   const { mutate } = useSWR('/dj-rest-auth/user/', fetchUser);
   const navigate = useNavigate();
   const newPassword = watch('newPassword');
 
   const onSubmit = async (data: FormInputs) => {
-    setApiError(null);
-    setSuccess(false);
-
     try {
       await changePassword(data.oldPassword, data.newPassword);
-      setSuccess(true);
+      toast.success('Password changed successfully. Redirecting to logout...');
       reset();
-    //   mutate();
 
-      // Delay, then logout
       setTimeout(() => {
         navigate('/logout');
-      }, 3000); // 3 seconds delay
-
+      }, 3000);
     } catch (err: any) {
-        const serverError = err?.response?.data;
+      const serverError = err?.response?.data;
 
-        if (serverError?.old_password?.length) {
-            setApiError(serverError.old_password[0]);
-        } else if (serverError?.detail) {
-            setApiError(serverError.detail);
-        } else if (err?.message === 'Network Error') {
-            setApiError('Network error: Please check your internet connection.');
-        } else {
-            setApiError('An unexpected error occurred. Please try again.');
-        }
+      if (serverError?.old_password?.length) {
+        toast.error(serverError.old_password[0]);
+      } else if (serverError?.detail) {
+        toast.error(serverError.detail);
+      } else if (err?.message === 'Network Error') {
+        toast.error('Network error: Please check your internet connection.');
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     }
   };
 
@@ -119,27 +104,6 @@ const ChangePassword: React.FC = () => {
           {isSubmitting ? 'Changing...' : 'Change Password'}
         </button>
       </form>
-
-      {apiError && (
-  <div className="alert alert-danger mt-3" role="alert">
-    <p className="mb-2">{apiError}</p>
-    <button
-      className="btn btn-sm btn-outline-danger"
-      onClick={() => {
-        setApiError(null);
-        reset(); // Reset form fields
-      }}
-    >
-      OK
-    </button>
-  </div>
-)}
-
-      {success && (
-        <div className="alert alert-success mt-3" role="alert">
-          Password changed successfully. Redirecting to logout...
-        </div>
-      )}
     </div>
   );
 };
