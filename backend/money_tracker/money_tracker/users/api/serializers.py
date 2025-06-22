@@ -19,7 +19,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
 
     class Meta:
         model = UserDetailsSerializer.Meta.model
-        fields = UserDetailsSerializer.Meta.fields + ('profile_image','full_name',)
+        fields = UserDetailsSerializer.Meta.fields + ('profile_image','full_name', "middle_name",)
 
 class CustomTokenSerializer(TokenSerializer):
     user = CustomUserDetailsSerializer(read_only=True)  # Use your custom user serializer
