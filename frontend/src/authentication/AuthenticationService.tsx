@@ -2,6 +2,7 @@ import axios, {AxiosResponse, AxiosInstance} from "axios";
 import Cookies from 'js-cookie';
 import React, { createContext, useContext, useMemo, ReactNode, useState, useEffect } from "react";
 import { toast } from 'react-hot-toast';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -71,7 +72,11 @@ axiosInstance.interceptors.response.use(
           console.warn("No refresh token available.");
         }
       }
-  
+      // ✅ Show toast for all other failed requests (except refresh and login)
+      if (!originalRequest?.url?.includes('/token/refresh/') && !originalRequest?.url?.includes('/login/')) {
+        const message = extractErrorMessage(error);
+        toast.error(message);
+      }
       return Promise.reject(error);
     }
   );
@@ -133,8 +138,7 @@ const login = async (username: string, password: string): Promise<{ user: User }
         throw new Error("Login failed.");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Login failed.');
-      throw error.response?.data?.detail || error.message;
+      throw error
     }
   };
 
