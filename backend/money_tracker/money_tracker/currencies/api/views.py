@@ -11,7 +11,7 @@ from rest_framework import status
 from django.http import Http404
 import logging
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError as DjangoValidationError
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -52,6 +52,16 @@ class CurrencyViewSet(viewsets.ModelViewSet):
         except DRFValidationError as e:
             logger.error(f"ValidationError on update: {e.detail}")
             raise
+        
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+        except DjangoValidationError as e:
+            logger.error(f"ValidationError on delete: {e.messages}")
+            raise DRFValidationError(e.messages)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ExchangeRateViewSet(viewsets.ModelViewSet):
     serializer_class = ExchangeRateSerializer
