@@ -1,27 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useSWR from 'swr';
 import { axiosInstance } from './AuthenticationService';
 import { Button, Form } from 'react-bootstrap';
 import placeholderProfileImage from '../assets/placeholder.png';
 import { toast } from 'react-hot-toast';
-import { UserProfileForm } from '../utils/zodSchemas';
+import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
-
-// Zod schema
-const userProfileSchema = z.object({
-  username: z.string(),
-  email: z.string().email({ message: 'Invalid email address' }),
-  first_name: z.string().min(1, 'First name is required'),
-  middle_name: z.string().optional(),
-  last_name: z.string().min(1, 'Last name is required'),
-  profile_image: z.any().optional(),
-});
-
-
 
 const UserProfile: React.FC = () => {
   const { data: user, error, mutate } = useSWR('/dj-rest-auth/user/', fetcher);
