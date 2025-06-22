@@ -13,12 +13,12 @@ const Home: React.FC = () => {
     return 'Good Night';
   };
 
-  const capitalize = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
+  const capitalize = (full_name: string) => full_name.charAt(0).toUpperCase() + full_name.slice(1);
 
   return (
     <div className="container mt-5">
       <h2>
-        {getGreeting()} {user?.username ? capitalize(user.username) : 'there'}, welcome to home page
+        {getGreeting()} {user?.full_name ? capitalize(user.full_name) : 'there'}, welcome to home page
       </h2>
     </div>
   );
