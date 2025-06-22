@@ -57,8 +57,20 @@ export default function CurrencyDetail() {
       await axiosInstance.delete(`/api/currencies/currencies/${code}/`);
       toast.success('Currency deleted successfully');
       navigate('/currencies');
-    } catch (error) {
-      toast.error('Failed to delete currency');
+    } catch (error: any) {
+      const responseData = error?.response?.data;
+
+      // Check if it's a list of errors (common in DRF)
+      if (Array.isArray(responseData)) {
+        toast.error(responseData[0]);
+      } 
+      // If it's an object with a detail field
+      else if (typeof responseData === 'object' && responseData?.detail) {
+        toast.error(responseData.detail);
+      } 
+      else {
+        toast.error('Failed to delete currency');
+      }
     }
   };
 
