@@ -37,3 +37,32 @@ export type FormInputs = z.infer<typeof ChangePasswordSchema>;
 export type CurrencyFormData = z.infer<typeof CurrencySchema>;
 export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
 export type UserProfileForm = z.infer<typeof userProfileSchema>;
+
+
+export const incomeSchema = z.object({
+  income_name: z.string().min(1),
+  currency: z.string().min(1), // Assume currency code
+  amount: z.number().nonnegative(),
+  notes: z.string().optional(),
+});
+
+export type IncomeFormValues = z.infer<typeof incomeSchema>;
+
+export interface IncomeResponse extends IncomeFormValues {
+  id: number;
+  amount_lcy_display: string;
+  created_by: string;
+  created_at: string;
+  modified_by: string | null;
+  modified_at: string | null;
+}
+
+export interface  Currency extends CurrencyFormData {
+  code: string;
+  description: string;
+  is_local: boolean;
+  created_by: string;
+  created_at: string;
+  modified_by: string | null;
+  modified_at: string;
+};

@@ -1,0 +1,60 @@
+import { useParams, useNavigate } from "react-router-dom";
+import useSWR from "swr";
+import { fetcher } from "../../utils/swrFetcher";
+import { incomeTypeMap, IncomeTypeKey } from "../../constants/incomeTypes";
+import { IncomeFormValues, IncomeResponse, Currency } from "../../utils/zodSchemas";
+import { axiosInstance } from "../../authentication/AuthenticationService";
+import IncomeForm from "../../income/IncomeForm";
+import { toast } from "react-hot-toast";
+import { useMemo } from "react";
+
+const EditIncome = () => {
+  const { type, id } = useParams<{ type: IncomeTypeKey; id: string }>();
+  const navigate = useNavigate();
+
+  if (!type || !(type in incomeTypeMap) || !id) {
+    return <div className="p-4 text-red-600">Invalid request.</div>;
+  }
+
+  const { endpoint, label, route } = incomeTypeMap[type];
+
+  const { data: income, mutate, isLoading } = useSWR<IncomeResponse>(`${endpoint}${id}/`, fetcher);
+  const { data: rawCurrencies, isLoading: currenciesLoading } = useSWR<Currency[]>("/api/currencies/", fetcher);
+
+  const currencies = useMemo(() => {
+    if (!rawCurrencies) return [];
+    return [...rawCurrencies].sort((a, b) => {
+      if (a.is_local === b.is_local) return a.code.localeCompare(b.code);
+      return a.is_local ? -1 : 1;
+    });
+  }, [rawCurrencies]);
+
+  const handleUpdate = async (payload: IncomeFormValues) => {
+    try {
+      await axiosInstance.put(`${endpoint}${id}/`, payload);
+      toast.success("Income updated.");
+      await mutate();
+      navigate(route);
+    } catch (_) {}
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-semibold mb-4">Edit {label}</h1>
+      {isLoading || currenciesLoading ? (
+        <p>Loading...</p>
+      ) : (
+        income && (
+          <IncomeForm
+            initialValues={income}
+            onSubmit={handleUpdate}
+            isEditing
+            currencies={currencies}
+          />
+        )
+      )}
+    </div>
+  );
+};
+
+export default EditIncome;
