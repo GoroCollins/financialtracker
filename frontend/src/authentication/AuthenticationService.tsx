@@ -88,6 +88,7 @@ interface User {
   username: string;
   email: string;
   profile_image?: string;  // Expect this to be a URL string
+  full_name?: string;
   // Add other user properties as needed
 }
 
