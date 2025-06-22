@@ -1,41 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import useSWR from 'swr';
 import { axiosInstance } from './AuthenticationService';
 import { Button, Form } from 'react-bootstrap';
-import placeholderProfileImage from "../assets/placeholder.png";
-
-interface UserProfileForm {
-  username: string;
-  email: string;
-  name: string;
-  profile_image: FileList; // Handling profile image upload
-}
+import placeholderProfileImage from '../assets/placeholder.png';
+import { toast } from 'react-hot-toast';
+import { UserProfileForm } from '../utils/zodSchemas';
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
+// Zod schema
+const userProfileSchema = z.object({
+  username: z.string(),
+  email: z.string().email({ message: 'Invalid email address' }),
+  first_name: z.string().min(1, 'First name is required'),
+  middle_name: z.string().optional(),
+  last_name: z.string().min(1, 'Last name is required'),
+  profile_image: z.any().optional(),
+});
+
+
+
 const UserProfile: React.FC = () => {
   const { data: user, error, mutate } = useSWR('/dj-rest-auth/user/', fetcher);
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<UserProfileForm>();
-  const [previewImage, setPreviewImage] = useState<string | null>(null); // To handle image preview
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<UserProfileForm>({
+    resolver: zodResolver(userProfileSchema),
+  });
 
-  React.useEffect(() => {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  useEffect(() => {
     if (user) {
       setValue('username', user.username);
       setValue('email', user.email);
-      setValue('name', user.name);
-      setPreviewImage(user.profile_image || null);  // Set preview image if available
+      setValue('first_name', user.first_name);
+      setValue('middle_name', user.middle_name || ''); 
+      setValue('last_name', user.last_name);
+      setPreviewImage(user.profile_image || null);
     }
   }, [user, setValue]);
 
   const onSubmit = async (data: UserProfileForm) => {
     const formData = new FormData();
-    //formData.append('username', data.username);
     formData.append('email', data.email);
-    formData.append('name', data.name);
-    
-    if (data.profile_image && data.profile_image[0]) {
-      formData.append('profile_image', data.profile_image[0]); // Append the new image if uploaded
+    formData.append('first_name', data.first_name);
+    formData.append('middle_name', data.middle_name || ''); 
+    formData.append('last_name', data.last_name);
+
+    if (data.profile_image?.[0]) {
+      formData.append('profile_image', data.profile_image[0]);
     }
 
     try {
@@ -44,16 +64,18 @@ const UserProfile: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      mutate();  // Refresh data after updating
-    } catch (error) {
-      console.error("Error updating user profile:", error);
+      toast.success('Profile updated successfully');
+      mutate();
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      toast.error('Failed to update profile');
     }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setPreviewImage(URL.createObjectURL(file));  // Update preview image
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
@@ -62,66 +84,70 @@ const UserProfile: React.FC = () => {
 
   return (
     <>
-    <h1>Manage your profile</h1>
-    <Form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
-      <Form.Group controlId="username">
-        <Form.Label>Username</Form.Label>
-        <Form.Control
-          type="text"
-          readOnly
-          {...register('username')}
-        />
-      </Form.Group>
+      <h1>Manage your profile</h1>
+      <Form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+        <Form.Group controlId="username">
+          <Form.Label>Username</Form.Label>
+          <Form.Control type="text" readOnly {...register('username')} />
+        </Form.Group>
 
-      <Form.Group controlId="email">
-        <Form.Label>Email</Form.Label>
-        <Form.Control
-          type="email"
-          {...register('email', { required: true })}
-        />
-        {errors.email && <p>Email is required</p>}
-      </Form.Group>
+        <Form.Group controlId="email">
+          <Form.Label>Email</Form.Label>
+          <Form.Control type="email" {...register('email')} />
+          {errors.email && <p className="text-danger">{errors.email.message}</p>}
+        </Form.Group>
 
-      <Form.Group controlId="name">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          type="text"
-          {...register('name', { required: true })}
-        />
-        {errors.name && <p>Name is required</p>}
-      </Form.Group>
+        <Form.Group controlId="first_name">
+          <Form.Label>First Name</Form.Label>
+          <Form.Control type="text" {...register('first_name')} />
+          {errors.first_name && <p className="text-danger">{errors.first_name.message}</p>}
+        </Form.Group>
 
-      {/* Display current profile image or a placeholder */}
-      <div>
-        <Form.Label>Profile Image</Form.Label>
-        {previewImage ? (
-          <div>
-            <img src={previewImage} alt="Profile" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
-          </div>
-        ) : (
-          <div>
-            <p>No profile image available</p> {/* Message when there's no image */}
-            <img 
-              src={placeholderProfileImage} // Use a placeholder image here
-              alt="Placeholder" 
-              style={{ width: '150px', height: '150px', objectFit: 'cover' }} 
+        <Form.Group controlId="middle_name">
+          <Form.Label>Middle Name (Optional)</Form.Label>
+          <Form.Control type="text" {...register('middle_name')} />
+        </Form.Group>
+
+        <Form.Group controlId="last_name">
+          <Form.Label>Last Name</Form.Label>
+          <Form.Control type="text" {...register('last_name')} />
+          {errors.last_name && <p className="text-danger">{errors.last_name.message}</p>}
+        </Form.Group>
+
+        <div>
+          <Form.Label>Profile Image</Form.Label>
+          {previewImage ? (
+            <img
+              src={previewImage}
+              alt="Profile"
+              style={{ width: '150px', height: '150px', objectFit: 'cover' }}
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <div>
+              <p>No profile image available</p>
+              <img
+                src={placeholderProfileImage}
+                alt="Placeholder"
+                style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+              />
+            </div>
+          )}
+        </div>
 
-      <Form.Group controlId="profile_image">
-        <Form.Label>Change Profile Image</Form.Label>
-        <Form.Control
-          type="file"
-          accept="image/*"
-          {...register('profile_image')}
-          onChange={handleImageChange}  // Update the image preview when a new file is selected
-        />
-      </Form.Group>
+        <Form.Group controlId="profile_image">
+          <Form.Label>Change Profile Image</Form.Label>
+          <Form.Control
+            type="file"
+            accept="image/*"
+            {...register('profile_image')}
+            onChange={handleImageChange}
+          />
+        </Form.Group>
 
-      <Button type="submit">Update Profile</Button>
-    </Form>
+        <Button type="submit" className="mt-3">
+          Update Profile
+        </Button>
+      </Form>
     </>
   );
 };
