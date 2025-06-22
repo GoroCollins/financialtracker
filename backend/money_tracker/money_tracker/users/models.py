@@ -12,10 +12,14 @@ class User(AbstractUser):
     """
 
     # First and last name do not cover name patterns around the globe
-    name = CharField(_("Name of User"), blank=True, max_length=255)
-    first_name = None  # type: ignore[assignment]
-    last_name = None  # type: ignore[assignment]
+    first_name = CharField(_("First Name"), blank=True, max_length=255)  # type: ignore[assignment]
+    middle_name = CharField(_("Middle Name"), blank=True, max_length=255)
+    last_name = CharField(_("Last Name"), blank=True, max_length=255)  # type: ignore[assignment]
     profile_image = ImageField(upload_to='uploads/images', null=True, blank=True)
+    
+    @property
+    def full_name(self):
+        return " ".join(filter(None, [self.first_name, self.middle_name, self.last_name]))
 
     def get_absolute_url(self) -> str:
         """Get URL for user's detail view.
