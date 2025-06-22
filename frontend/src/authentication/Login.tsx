@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthService } from "./AuthenticationService";
-import { toast } from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 interface LoginFormInputs {
   username: string;
@@ -14,11 +14,13 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { login } = useAuthService();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setError,
   } = useForm<LoginFormInputs>({
     defaultValues: {
       username: "",
@@ -26,20 +28,18 @@ const Login: React.FC = () => {
     },
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
       await login(data.username, data.password);
-      toast.success("Login successful");
       navigate(state?.from?.pathname || "/home");
       reset();
     } catch (error: any) {
-      if (error.response?.data?.detail) {
-        toast.error(error.response.data.detail);
-      } else if (error.request) {
-        toast.error("Network error. Please try again later.");
-      } else {
-        toast.error("An error occurred. Please try again.");
-      }
+      setError("password", {
+        type: "manual",
+        message: "Invalid username or password.",
+      });
     }
   };
 
@@ -59,13 +59,22 @@ const Login: React.FC = () => {
 
       <Form.Group className="mb-3" controlId="password">
         <Form.Label>Password</Form.Label>
-        <Form.Control
-          type="password"
-          {...register("password", { required: "This is required" })}
-          placeholder="password"
-        />
+        <InputGroup>
+          <Form.Control
+            type={showPassword ? "text" : "password"}
+            {...register("password", { required: "This is required" })}
+            placeholder="password"
+          />
+          <Button
+            variant="outline-secondary"
+            onClick={() => setShowPassword((prev) => !prev)}
+            type="button"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </Button>
+        </InputGroup>
         {errors.password && (
-          <p className="text-danger">{errors.password.message}</p>
+          <p className="text-danger mt-1">{errors.password.message}</p>
         )}
       </Form.Group>
 
