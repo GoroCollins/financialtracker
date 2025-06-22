@@ -4,9 +4,10 @@ from money_tracker.users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer[User]):
+    full_name = serializers.CharField(read_only=True)
     class Meta:
         model = User
-        fields = ["username", "name", "url", "profile_image"]
+        fields = ["username", "first_name", "middle_name", "last_name", "full_name", "url", "profile_image"]
 
         extra_kwargs = {
             "url": {"view_name": "api:user-detail", "lookup_field": "username"},
@@ -14,11 +15,11 @@ class UserSerializer(serializers.ModelSerializer[User]):
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     profile_image = serializers.ImageField(required=False) # read_only=True
-    name = serializers.CharField()
+    full_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = UserDetailsSerializer.Meta.model
-        fields = UserDetailsSerializer.Meta.fields + ('profile_image','name',)
+        fields = UserDetailsSerializer.Meta.fields + ('profile_image','full_name',)
 
 class CustomTokenSerializer(TokenSerializer):
     user = CustomUserDetailsSerializer(read_only=True)  # Use your custom user serializer
