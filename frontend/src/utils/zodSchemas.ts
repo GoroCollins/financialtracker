@@ -13,5 +13,15 @@ export const ExchangeRateSchema = z.object({
     .min(0.1, 'Rate must be at least 0.1'),
 });
 
+export const userProfileSchema = z.object({
+  username: z.string(),
+  email: z.string().email({ message: 'Invalid email address' }),
+  first_name: z.string().min(1, 'First name is required'),
+  middle_name: z.string().optional(),
+  last_name: z.string().min(1, 'Last name is required'),
+  profile_image: z.any().optional(),
+});
+
 export type CurrencyFormData = z.infer<typeof CurrencySchema>;
 export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
+export type UserProfileForm = z.infer<typeof userProfileSchema>;
