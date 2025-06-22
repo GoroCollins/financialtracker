@@ -22,6 +22,18 @@ export const userProfileSchema = z.object({
   profile_image: z.any().optional(),
 });
 
+export const ChangePasswordSchema = z
+  .object({
+    oldPassword: z.string().nonempty('Current password is required'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().nonempty('Please confirm your password'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export type FormInputs = z.infer<typeof ChangePasswordSchema>;
 export type CurrencyFormData = z.infer<typeof CurrencySchema>;
 export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
 export type UserProfileForm = z.infer<typeof userProfileSchema>;

@@ -1,26 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { changePassword } from './ChangePasswordUtility';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-
-type FormInputs = {
-  oldPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
+import { Eye, EyeOff } from 'lucide-react';
+import { ChangePasswordSchema, FormInputs } from '../utils/zodSchemas';
 
 const ChangePassword: React.FC = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<FormInputs>();
+  } = useForm<FormInputs>({
+    resolver: zodResolver(ChangePasswordSchema),
+  });
 
   const navigate = useNavigate();
-  const newPassword = watch('newPassword');
+
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const toggleOld = () => setShowOld(prev => !prev);
+  const toggleNew = () => setShowNew(prev => !prev);
+  const toggleConfirm = () => setShowConfirm(prev => !prev);
 
   const onSubmit = async (data: FormInputs) => {
     try {
@@ -46,59 +51,38 @@ const ChangePassword: React.FC = () => {
     }
   };
 
+  const renderPasswordField = (
+    id: keyof FormInputs,
+    label: string,
+    show: boolean,
+    toggle: () => void,
+    error?: string
+  ) => (
+    <div className="mb-3 position-relative">
+      <label htmlFor={id} className="form-label">{label}</label>
+      <div className="input-group">
+        <input
+          id={id}
+          type={show ? 'text' : 'password'}
+          className={`form-control ${error ? 'is-invalid' : ''}`}
+          {...register(id)}
+        />
+        <span className="input-group-text" onClick={toggle} style={{ cursor: 'pointer' }}>
+          {show ? <EyeOff size={18} /> : <Eye size={18} />}
+        </span>
+        {error && <div className="invalid-feedback d-block ms-1">{error}</div>}
+      </div>
+    </div>
+  );
+
   return (
     <div className="container mt-4">
       <h3>Change Password</h3>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-3">
-        <div className="mb-3">
-          <label htmlFor="oldPassword" className="form-label">Current Password</label>
-          <input
-            id="oldPassword"
-            type="password"
-            className={`form-control ${errors.oldPassword ? 'is-invalid' : ''}`}
-            {...register('oldPassword', { required: 'Current password is required' })}
-          />
-          {errors.oldPassword && (
-            <div className="invalid-feedback">{errors.oldPassword.message}</div>
-          )}
-        </div>
-
-        <div className="mb-3">
-          <label htmlFor="newPassword" className="form-label">New Password</label>
-          <input
-            id="newPassword"
-            type="password"
-            className={`form-control ${errors.newPassword ? 'is-invalid' : ''}`}
-            {...register('newPassword', {
-              required: 'New password is required',
-              minLength: { value: 6, message: 'Password must be at least 6 characters' },
-            })}
-          />
-          {errors.newPassword && (
-            <div className="invalid-feedback">{errors.newPassword.message}</div>
-          )}
-        </div>
-
-        <div className="mb-3">
-          <label htmlFor="confirmPassword" className="form-label">Confirm New Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
-            {...register('confirmPassword', {
-              required: 'Please confirm your password',
-              validate: value =>
-                value === newPassword || 'Passwords do not match',
-            })}
-          />
-          {errors.confirmPassword && (
-            <div className="invalid-feedback">{errors.confirmPassword.message}</div>
-          )}
-          {watch('confirmPassword') && watch('newPassword') !== watch('confirmPassword') && (
-            <div className="text-danger mt-1">Passwords do not match</div>
-          )}
-        </div>
+        {renderPasswordField('oldPassword', 'Current Password', showOld, toggleOld, errors.oldPassword?.message)}
+        {renderPasswordField('newPassword', 'New Password', showNew, toggleNew, errors.newPassword?.message)}
+        {renderPasswordField('confirmPassword', 'Confirm New Password', showConfirm, toggleConfirm, errors.confirmPassword?.message)}
 
         <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
           {isSubmitting ? 'Changing...' : 'Change Password'}
