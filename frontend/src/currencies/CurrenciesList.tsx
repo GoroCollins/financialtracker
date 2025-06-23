@@ -1,16 +1,8 @@
 import useSWR from 'swr';
 import { Link } from 'react-router-dom';
 import { axiosInstance } from '../authentication/AuthenticationService';
+import { Currency } from '../utils/zodSchemas';
 
-type Currency = {
-  code: string;
-  description: string;
-  is_local: boolean;
-  created_by: string;
-  created_at: string;
-  modified_by: string | null;
-  modified_at: string;
-};
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
