@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { CurrencySchema, CurrencyFormData } from '../utils/zodSchemas';
 import { axiosInstance } from '../authentication/AuthenticationService';
-import { toast } from 'react-hot-toast'; // ✅ import toast
+import { toast } from 'react-hot-toast';
 
 export default function CreateCurrency() {
   const navigate = useNavigate();
