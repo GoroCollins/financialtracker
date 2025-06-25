@@ -19,7 +19,7 @@ const EditIncome = () => {
   const { endpoint, label, route } = incomeTypeMap[type];
 
   const { data: income, mutate, isLoading } = useSWR<IncomeResponse>(`${endpoint}${id}/`, fetcher);
-  const { data: rawCurrencies, isLoading: currenciesLoading } = useSWR<Currency[]>("/api/currencies/", fetcher);
+  const { data: rawCurrencies, isLoading: currenciesLoading } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
 
   const currencies = useMemo(() => {
     if (!rawCurrencies) return [];
