@@ -15,7 +15,14 @@ const IncomeList: React.FC<Props> = ({ incomes, onDelete, basePath }) => (
         <div className="text-lg font-bold">{income.income_name}</div>
         <div>{income.currency} {income.amount} — {income.amount_lcy_display}</div>
         <div className="text-sm text-gray-500">
-          By {income.created_by} on {income.created_at}
+          Created by {income.created_by} on {income.created_at}
+        </div>
+        <div>
+          {income.modified_by && (
+            <span>
+              Modified by {income.modified_by} on {income.modified_at}
+            </span>
+          )}
         </div>
         <div className="flex gap-4 mt-2">
           <Link to={`${basePath}/edit/${income.id}`} className="text-blue-600">Edit</Link>
