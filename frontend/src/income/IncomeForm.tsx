@@ -13,16 +13,21 @@ interface IncomeFormProps {
 }
 
 export interface IncomeFormHandle {
-  reset: () => void;
+  reset: () => void; // useForm<IncomeFormValues>({resolver: zodResolver(incomeSchema), defaultValues: initialValues });
 }
 
 const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
   ({ initialValues, onSubmit, isEditing = false, currencies }, ref) => {
     const { register, handleSubmit, reset, formState: { errors }
-    } = useForm<IncomeFormValues>({resolver: zodResolver(incomeSchema), defaultValues: initialValues });
-
+    } = useForm<IncomeFormValues>({
+  resolver: zodResolver(incomeSchema), defaultValues: initialValues? { ...initialValues, amount: Number(initialValues.amount) }: undefined, });
     useEffect(() => {
-      if (initialValues) reset(initialValues);
+      if (initialValues) {
+        reset({
+          ...initialValues,
+          amount: Number(initialValues.amount),
+        });
+      }
     }, [initialValues, reset]);
 
     useImperativeHandle(ref, () => ({ reset }), [reset]);
@@ -52,13 +57,7 @@ const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
         </select>
         {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
 
-        <input
-          type="number"
-          step="0.01"
-          {...register("amount", { valueAsNumber: true })}
-          placeholder="Amount"
-          className="form-control"
-        />
+        <input type="number" step="0.01" {...register("amount", { valueAsNumber: true })} placeholder="Amount" className="form-control" />
         {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
 
         <textarea {...register("notes")} placeholder="Notes (optional)" className="form-control" />
