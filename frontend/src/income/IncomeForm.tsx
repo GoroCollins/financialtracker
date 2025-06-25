@@ -2,7 +2,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IncomeFormValues, incomeSchema } from "../utils/zodSchemas";
-import React, { useEffect, forwardRef, useImperativeHandle } from "react";
+import { useEffect, forwardRef, useImperativeHandle } from "react";
 import { Currency } from "../utils/zodSchemas";
 
 interface IncomeFormProps {
