@@ -8,10 +8,12 @@ import IncomeForm from "../../income/IncomeForm";
 import IncomeList from "../../income/IncomeList";
 import { toast } from "react-hot-toast";
 import { Currency } from "../../utils/zodSchemas";
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 
 const IncomePage = () => {
   const { type } = useParams<{ type: IncomeTypeKey }>();
+  const [showForm, setShowForm] = useState(false);
+  const formRef = useRef<{ reset: () => void }>(null);
 
   if (!type || !(type in incomeTypeMap)) {
     return <div className="p-4 text-red-600">Invalid income type.</div>;
@@ -28,7 +30,7 @@ const IncomePage = () => {
   const {
     data: rawCurrencies,
     isLoading: currenciesLoading,
-  } = useSWR<Currency[]>("/api/currencies/currencies/", fetcher);
+  } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
 
   const currencies = useMemo(() => {
     if (!Array.isArray(rawCurrencies)) return [];
@@ -42,7 +44,9 @@ const IncomePage = () => {
     try {
       await axiosInstance.post(endpoint, payload);
       toast.success("Income created.");
-      await mutate(); // ✅ correct usage
+      await mutate();
+      setShowForm(false);
+      formRef.current?.reset();
     } catch (_) {}
   };
 
@@ -50,7 +54,7 @@ const IncomePage = () => {
     try {
       await axiosInstance.delete(`${endpoint}${id}/`);
       toast.success("Income deleted.");
-      await mutate(); // ✅ correct usage
+      await mutate();
     } catch (_) {}
   };
 
@@ -58,10 +62,27 @@ const IncomePage = () => {
     <div className="p-4">
       <h1 className="text-2xl font-semibold mb-4">{label}</h1>
 
-      {currenciesLoading ? (
-        <p>Loading currencies...</p>
-      ) : (
-        <IncomeForm onSubmit={handleCreate} currencies={currencies} />
+      {!showForm && (
+        <button
+          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={() => setShowForm(true)}
+        >
+          + Create Income
+        </button>
+      )}
+
+      {showForm && (
+        <>
+          {currenciesLoading ? (
+            <p>Loading currencies...</p>
+          ) : (
+            <IncomeForm
+              onSubmit={handleCreate}
+              currencies={currencies}
+              ref={formRef}
+            />
+          )}
+        </>
       )}
 
       {isLoading ? (
