@@ -36,7 +36,7 @@ const RoutesConfig: React.FC = () => {
       <Route path="/currencies/:code" element={<CurrencyDetail />} />
       <Route path="/currencies/:code/exchange-rate/create" element={<CreateExchangeRate />} />
       <Route path="/income/:type" element={<IncomePage />} />
-      <Route path="/income:type/edit:id" element={<EditIncome />} />
+      <Route path="/income/:type/edit/:id" element={<EditIncome />} />
       {/* Add more protected routes here */}
       </Route>
     </Routes>
