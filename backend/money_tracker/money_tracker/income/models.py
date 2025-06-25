@@ -31,8 +31,8 @@ class BaseIncome(models.Model, CurrencyConversionMixin):
         ]
         # CheckConstraint for non-negative amounts
         constraints = [
-            models.CheckConstraint(check=models.Q(amount__gte=0), name="%(class)s_amount_gte_zero"),
-            models.CheckConstraint(check=models.Q(amount_lcy__gte=0), name="%(class)s_amount_lcy_gte_zero"),
+            models.CheckConstraint(condition=models.Q(amount__gte=0), name="%(class)s_amount_gte_zero"),
+            models.CheckConstraint(condition=models.Q(amount_lcy__gte=0), name="%(class)s_amount_lcy_gte_zero"),
         ]
         ordering = ["-created_at"]
         get_latest_by = ['-created_at']
