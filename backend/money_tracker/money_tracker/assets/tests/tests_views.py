@@ -62,9 +62,9 @@ class TestLiquidAssetViewSet:
         """
         Test that unauthenticated users cannot access protected endpoints.
         """
-        url = reverse('api:assets:liquidasset-list')  # Replace with your actual URL name
+        url = reverse('api:assets:liquidasset-list')
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_unauthenticated_cannot_create_liquid_asset(self, api_client, local_currency):
         """
@@ -73,7 +73,7 @@ class TestLiquidAssetViewSet:
         url = reverse('api:assets:liquidasset-list')
         data = {"source": "Bank", "name":"test", "currency": local_currency.code, "amount": 1000, "notes": "Test asset"}
         response = api_client.post(url, data, format='json')
-        assert response.status_code == status.HTTP_403_FORBIDDEN  # ✅ Expect forbidden
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert LiquidAsset.objects.count() == 0  # ✅ Ensure no record was created
         
     def test_cannot_update_other_users_liquid_asset(self, authenticated_api_client, another_user, liquid_asset):
@@ -135,9 +135,9 @@ class TestEquityViewSet:
         """
         Test that unauthenticated users cannot access protected endpoints.
         """
-        url = reverse('api:assets:equity-list')  # Replace with your actual URL name
+        url = reverse('api:assets:equity-list')
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
     
     def test_unauthenticated_cannot_create_equity(self, api_client, local_currency):
         """
@@ -146,7 +146,7 @@ class TestEquityViewSet:
         url = reverse('api:assets:equity-list')
         data = {"name": "Stock A", "ratio": Decimal('0.65'), "currency": local_currency.code, "amount": Decimal('2000'), "note": "Test Asset"}
         response = api_client.post(url, data, format='json')
-        assert response.status_code == status.HTTP_403_FORBIDDEN  # ✅ Expect forbidden
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert Equity.objects.count() == 0  # ✅ Ensure no record was created
     
     def test_cannot_update_other_users_equity(self, authenticated_api_client, another_user, equity):
@@ -208,9 +208,9 @@ class TestInvestmentAccountViewSet:
         """
         Test that unauthenticated users cannot access protected endpoints.
         """
-        url = reverse('api:assets:investmentaccount-list')  # Replace with your actual URL name
+        url = reverse('api:assets:investmentaccount-list')
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
     
     def test_unauthenticated_cannot_create_investment_account(self, api_client, local_currency):
         """
@@ -219,7 +219,7 @@ class TestInvestmentAccountViewSet:
         url = reverse('api:assets:investmentaccount-list')
         data = {"name": "401k", "currency": local_currency.code, "amount": 5000, "notes": "Test account"}
         response = api_client.post(url, data, format='json')
-        assert response.status_code == status.HTTP_403_FORBIDDEN  # ✅ Expect forbidden
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert InvestmentAccount.objects.count() == 0  # ✅ Ensure no record was created
     
     def test_cannot_update_other_users_investment_account(self, authenticated_api_client, another_user, investment_account):
@@ -281,9 +281,9 @@ class TestRetirementAccountViewSet:
         """
         Test that unauthenticated users cannot access protected endpoints.
         """
-        url = reverse('api:assets:retirementaccount-list')  # Replace with your actual URL name
+        url = reverse('api:assets:retirementaccount-list')
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
     
     def test_unauthenticated_cannot_create_retirement_account(self, api_client, local_currency):
         """
@@ -292,7 +292,7 @@ class TestRetirementAccountViewSet:
         url = reverse('api:assets:retirementaccount-list')
         data = {"name": "Pension Plan", "currency": local_currency.code, "amount": 8000, "employer": "Company A", "notes": "Test account"}
         response = api_client.post(url, data, format='json')
-        assert response.status_code == status.HTTP_403_FORBIDDEN  # ✅ Expect forbidden
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert RetirementAccount.objects.count() == 0  # ✅ Ensure no record was created
     
     def test_cannot_update_other_users_retirement_account(self, authenticated_api_client, another_user, retirement_account):
@@ -333,7 +333,7 @@ class TestTotalAssetsAPIView:
         url = reverse("api:assets:totalassets")
         response = api_client.get(url)
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
     def test_user_cannot_access_total_assets_of_another_user(self, another_user):
         """Ensure users cannot access the total expenses of another user."""
