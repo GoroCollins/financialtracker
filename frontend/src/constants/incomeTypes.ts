@@ -1,4 +1,3 @@
-// constants/incomeTypes.ts
 export const incomeTypeMap = {
   earned: {
     label: "Earned Income",
