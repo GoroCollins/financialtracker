@@ -23,8 +23,6 @@ const IncomeList: React.FC<Props> = ({ incomes, basePath }) => {
               View Details
             </Link>
           </div>
-          {incomes.length === 0 && (
-        <div className="text-gray-500">No incomes found.</div> )}
         </div>
       ))}
       </div>
