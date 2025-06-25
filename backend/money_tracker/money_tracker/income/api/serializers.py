@@ -11,9 +11,9 @@ class BaseIncomeSerializer(serializers.ModelSerializer):
     class Meta:
         fields = [
             'income_name', 'currency', 'amount', 'amount_lcy_display', 'notes', 
-            'created_by', 'created_at', 'modified_by', 'modified_at'
+            'created_by', 'created_at', 'modified_by', 'modified_at', 'id'
         ]
-        read_only_fields = [ 'created_by', 'created_at', 'modified_by', 'modified_at']
+        read_only_fields = [ 'created_by', 'created_at', 'modified_by', 'modified_at', 'id']
     
     def get_modified_by(self, obj):
         """Ensure modified_by remains NULL on creation and is only set on update."""
