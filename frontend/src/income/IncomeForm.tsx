@@ -2,74 +2,73 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IncomeFormValues, incomeSchema } from "../utils/zodSchemas";
-import { useEffect } from "react";
+import React, { useEffect, forwardRef, useImperativeHandle } from "react";
 import { Currency } from "../utils/zodSchemas";
 
 interface IncomeFormProps {
   initialValues?: IncomeFormValues;
   onSubmit: (data: IncomeFormValues) => void;
   isEditing?: boolean;
-  currencies: Currency[];  // 👈 Add this prop
+  currencies: Currency[];
 }
 
-const IncomeForm: React.FC<IncomeFormProps> = ({ initialValues, onSubmit, isEditing = false, currencies }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<IncomeFormValues>({
-    resolver: zodResolver(incomeSchema),
-    defaultValues: initialValues
-  });
+export interface IncomeFormHandle {
+  reset: () => void;
+}
 
-  useEffect(() => {
-    if (initialValues) reset(initialValues);
-  }, [initialValues, reset]);
+const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
+  ({ initialValues, onSubmit, isEditing = false, currencies }, ref) => {
+    const { register, handleSubmit, reset, formState: { errors }
+    } = useForm<IncomeFormValues>({resolver: zodResolver(incomeSchema), defaultValues: initialValues });
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md">
-      <input {...register("income_name")} placeholder="Income Name" />
-      {errors.income_name && <p className="text-red-500">{errors.income_name.message}</p>}
+    useEffect(() => {
+      if (initialValues) reset(initialValues);
+    }, [initialValues, reset]);
 
-      <select {...register("currency")} className="form-select">
-        <option value="">Select Currency</option>
+    useImperativeHandle(ref, () => ({ reset }), [reset]);
 
-        {/* Group Local Currencies */}
-        {currencies
+    return (
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mb-6">
+        <input {...register("income_name")} placeholder="Income Name" className="form-control" />
+        {errors.income_name && <p className="text-red-500">{errors.income_name.message}</p>}
+
+        <select {...register("currency")} className="form-select">
+          <option value="">Select Currency</option>
+          {currencies
             .filter((c) => c.is_local)
             .map((currency) => (
-            <option key={currency.code} value={currency.code}>
+              <option key={currency.code} value={currency.code}>
                 {currency.code} - {currency.description}
-            </option>
+              </option>
             ))}
-
-        {/* Separator */}
-        {currencies.some((c) => !c.is_local) && (
-            <option disabled>──────────</option>
-        )}
-
-        {/* Group Foreign Currencies */}
-        {currencies
+          {currencies.some((c) => !c.is_local) && <option disabled>──────────</option>}
+          {currencies
             .filter((c) => !c.is_local)
             .map((currency) => (
-            <option key={currency.code} value={currency.code}>
+              <option key={currency.code} value={currency.code}>
                 {currency.code} - {currency.description}
-            </option>
+              </option>
             ))}
         </select>
-      {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+        {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
 
-      <input type="number" step="0.01" {...register("amount", { valueAsNumber: true })} placeholder="Amount" />
-      {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
+        <input
+          type="number"
+          step="0.01"
+          {...register("amount", { valueAsNumber: true })}
+          placeholder="Amount"
+          className="form-control"
+        />
+        {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
 
-      <textarea {...register("notes")} placeholder="Notes (optional)" />
+        <textarea {...register("notes")} placeholder="Notes (optional)" className="form-control" />
 
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-        {isEditing ? "Update" : "Create"}
-      </button>
-    </form>
-  );
-};
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+          {isEditing ? "Update" : "Create"}
+        </button>
+      </form>
+    );
+  }
+);
 
 export default IncomeForm;
