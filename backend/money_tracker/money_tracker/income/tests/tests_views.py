@@ -68,7 +68,7 @@ def test_create_earned_income_requires_authentication(authenticated_api_client, 
     }
     # Unauthenticated request
     response = api_client.post(url, data, format="json")
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
     # Authenticated request
     response = authenticated_api_client.post(url, data, format='json')
     assert response.status_code == status.HTTP_201_CREATED
@@ -119,14 +119,13 @@ def test_earned_income_delete(authenticated_api_client, earned_income):
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert EarnedIncome.objects.count() == 0
 
-
 def test_unauthenticated_access(api_client):
     """
     Test that unauthenticated users cannot access protected endpoints.
     """
     url = reverse('api:income:earnedincome-list')  # Replace with your actual URL name
     response = api_client.get(url)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_unauthenticated_cannot_create_income(api_client, local_currency):
     """
@@ -140,18 +139,15 @@ def test_unauthenticated_cannot_create_income(api_client, local_currency):
         "notes": "One-time payment",
     }
     response = api_client.post(url, data, format='json')
-    assert response.status_code == status.HTTP_403_FORBIDDEN  # ✅ Expect forbidden
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert EarnedIncome.objects.count() == 0  # ✅ Ensure no record was created
     
-
 def test_unauthenticated_user_cannot_access_total_income(api_client):
         """Ensure unauthenticated users cannot access the total expenses API."""
         url = reverse("api:income:totalincome")
         response = api_client.get(url)
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_authenticated_user_receives_correct_total(authenticated_api_client, earned_income, portfolio_income, passive_income):
         """Ensure authenticated users get the correct total expenses."""
