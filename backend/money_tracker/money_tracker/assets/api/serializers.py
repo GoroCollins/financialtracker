@@ -83,7 +83,6 @@ class LiquidAssetSerializer(BaseAssetSerializer):
 class EquitySerializer(BaseAssetSerializer):
     class Meta(BaseAssetSerializer.Meta):
         model = Equity
-        # fields = ["name", "ratio"] + BaseAssetSerializer.Meta.fields
         fields = ["name", "ratio"] + list(BaseAssetSerializer.Meta.fields)
 
 
