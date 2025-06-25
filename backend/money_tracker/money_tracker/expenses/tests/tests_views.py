@@ -33,7 +33,7 @@ class TestExpenseViewSets:
         """Ensure unauthenticated users cannot access expenses."""
         url = reverse("api:expenses:fixedexpense-list")  # Change based on your view names
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_authenticated_user_sees_only_their_expenses(self, authenticated_api_client, fixed_expense):
         """Ensure users see only their own expenses."""
@@ -55,7 +55,7 @@ class TestExpenseViewSets:
 
         # Unauthenticated request
         response = api_client.post(url, data, format="json")
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
         # Authenticated request
         response = authenticated_api_client.post(url, data, format="json")
@@ -105,7 +105,7 @@ class TestTotalExpensesAPIView:
         url = reverse("api:expenses:totalexpenses")
         response = api_client.get(url)
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_authenticated_user_receives_correct_total(self, authenticated_api_client, fixed_expense, variable_expense, discretionary_expense):
         """Ensure authenticated users get the correct total expenses."""
