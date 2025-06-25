@@ -22,7 +22,7 @@ def api_request():
 def unauthenticated_request(api_request):
     """Provides a request without authentication."""
     request = api_request.post('/')
-    request.user = AnonymousUser()  # Ensures request is treated as unauthenticated
+    request.user = AnonymousUser()
     return request
 
 @pytest.mark.django_db
@@ -44,7 +44,7 @@ class TestLiquidAssetSerializer:
         data = {
             "source": "Bank Deposit",
             "currency": local_currency.code,
-            "amount": Decimal('-100.00'),  # Negative value should trigger validation error
+            "amount": Decimal('-100.00'),
             "created_by": user.id,
         }
         serializer = LiquidAssetSerializer(data=data)
@@ -61,7 +61,7 @@ class TestLiquidAssetSerializer:
         serializer = LiquidAssetSerializer(data=data, context={"request": request})
         assert serializer.is_valid(), serializer.errors
         instance = serializer.save()
-        assert instance.modified_by is None  # Ensure it's not set on creation
+        assert instance.modified_by is None
     
     def test_modified_by_is_set_on_update(self, user, api_request, liquid_asset):
         """Test that modified_by is set on update"""
@@ -70,7 +70,7 @@ class TestLiquidAssetSerializer:
         serializer = LiquidAssetSerializer(instance=liquid_asset, data={"amount": Decimal('2000')}, partial=True, context={"request": request})
         assert serializer.is_valid(), serializer.errors
         updated_instance = serializer.save()
-        assert updated_instance.modified_by == request.user  # Ensure modified_by is set
+        assert updated_instance.modified_by == request.user
         
     def test_created_by_is_set_on_create(self, user, api_request, local_currency):
         """Test that created_by is set when creating an object"""
@@ -81,7 +81,7 @@ class TestLiquidAssetSerializer:
         assert serializer.is_valid(), serializer.errors
         instance = serializer.save()
         assert instance.created_by == request.user
-        assert instance.modified_by is None  # Should be NULL on creation
+        assert instance.modified_by is None
 
 @pytest.mark.django_db
 class TestEquitySerializer:
@@ -104,7 +104,7 @@ class TestEquitySerializer:
             "name": "Tech Stocks",
             "currency": local_currency.code,
             "amount": Decimal('5000.00'),
-            "ratio": Decimal('1.5'),  # Ratio should be between 0.1 and 1
+            "ratio": Decimal('1.5'),
             "created_by": user.id,
         }
         serializer = EquitySerializer(data=data)
@@ -119,7 +119,7 @@ class TestEquitySerializer:
         serializer = EquitySerializer(data=data, context={"request": request})
         assert serializer.is_valid(), serializer.errors
         instance = serializer.save()
-        assert instance.modified_by is None  # Ensure it's not set on creation
+        assert instance.modified_by is None
     
     def test_modified_by_is_set_on_update(self, user, api_request, equity):
         """Test that modified_by is set on update"""
