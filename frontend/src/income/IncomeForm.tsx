@@ -13,7 +13,7 @@ interface IncomeFormProps {
 }
 
 export interface IncomeFormHandle {
-  reset: () => void; // useForm<IncomeFormValues>({resolver: zodResolver(incomeSchema), defaultValues: initialValues });
+  reset: () => void;
 }
 
 const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
