@@ -38,7 +38,7 @@ def test_unauthenticated_user_cannot_access_currencies_list(api_client, local_cu
         """Ensure unauthenticated users cannot access currencies."""
         url = reverse("api:currencies:currency-list")  # Change based on your view names
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
 @pytest.mark.django_db
 def test_create_currency_requires_authentication(api_client, authenticated_api_client, user):
@@ -52,7 +52,7 @@ def test_create_currency_requires_authentication(api_client, authenticated_api_c
 
         # Unauthenticated request
         response = api_client.post(url, data, format="json")
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
         # Authenticated request
         response = authenticated_api_client.post(url, data, format="json")
@@ -112,7 +112,7 @@ def test_unauthenticated_user_cannot_access_exchange_rates_list(api_client):
         """Ensure unauthenticated users cannot access currencies."""
         url = reverse("api:currencies:exchangerate-list")  # Change based on your view names
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
 @pytest.mark.django_db
 def test_create_exchange_rate_requires_authentication(api_client, authenticated_api_client, foreign_currency):
@@ -125,7 +125,7 @@ def test_create_exchange_rate_requires_authentication(api_client, authenticated_
 
         # Unauthenticated request
         response = api_client.post(url, data, format="json")
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
         # Authenticated request
         response = authenticated_api_client.post(url, data, format="json")
@@ -181,14 +181,13 @@ def test_user_cannot_access_another_users_exchange_rates(exchange_rate, another_
 
         assert response.status_code == status.HTTP_404_NOT_FOUND 
 
-
 @pytest.mark.django_db
 def test_unauthenticated_user_cannot_access_local_currency(api_client):
         """Ensure unauthenticated users cannot access the local currency API."""
         url = reverse("api:currencies:get-localcurrency")
         response = api_client.get(url)
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_authenticated_user_receives_correct_local_currency(authenticated_api_client, local_currency):
         """Ensure authenticated users get the correct local currency."""
