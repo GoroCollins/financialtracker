@@ -41,7 +41,7 @@ export type UserProfileForm = z.infer<typeof userProfileSchema>;
 
 export const incomeSchema = z.object({
   income_name: z.string().min(1),
-  currency: z.string().min(1), // Assume currency code
+  currency: z.string().min(1),
   amount: z.number().nonnegative(),
   notes: z.string().optional(),
 });
