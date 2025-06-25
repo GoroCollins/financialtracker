@@ -15,9 +15,9 @@ def api_client():
 class TestLoanViewSet:
     def test_unauthenticated_user_cannot_access_loans(self, api_client):
         """Ensure unauthenticated users cannot access loans."""
-        url = reverse("api:liabilities:loan-list")  # Change based on your view names
+        url = reverse("api:liabilities:loan-list")
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
     def test_authenticated_users_sees_only_their_loans(self, api_client, user, loan):
         """Test retrieving a list of loans."""
@@ -46,7 +46,7 @@ class TestLoanViewSet:
         assert Loan.objects.count() == 0
         # Unauthenticated request
         response = api_client.post(url, data, format="json")
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
          # Authenticate user
         api_client.force_authenticate(user=user)
@@ -92,9 +92,9 @@ class TestLoanViewSet:
 class TestInterestTypeViewSet:
     def test_unauthenticated_user_cannot_access_loans(self, api_client):
         """Ensure unauthenticated users cannot access interest types."""
-        url = reverse("api:liabilities:interesttype-list")  # Change based on your view names
+        url = reverse("api:liabilities:interesttype-list")
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
     def test_authenticated_users_see_only_their_interest_types(self, api_client, user, interest_type):
         """Test retrieving a list of interest types."""
@@ -112,7 +112,7 @@ class TestInterestTypeViewSet:
         
         # Unauthenticated request
         response = api_client.post(url, data, format="json")
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
         
         # Authenticate user
         api_client.force_authenticate(user=user)
@@ -154,7 +154,6 @@ class TestInterestTypeViewSet:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-
 @pytest.mark.django_db
 class TestTotalLiabilitiesAPIView:
     def test_unauthenticated_user_cannot_access_total_expenses(self, api_client):
@@ -162,7 +161,8 @@ class TestTotalLiabilitiesAPIView:
         url = reverse("api:liabilities:totalliabilities")
         response = api_client.get(url)
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        
     def test_authenticated_user_can_access_total_liabilities(self, api_client, user, loan):
         """Test retrieving total liabilities."""
         api_client.force_authenticate(user=user)
