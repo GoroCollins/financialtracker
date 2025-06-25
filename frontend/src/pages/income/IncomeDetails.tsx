@@ -17,7 +17,7 @@ const IncomeDetails = () => {
     return <div className="p-4 text-red-600">Invalid income type or ID.</div>;
   }
 
-  const { endpoint, route } = incomeTypeMap[type];
+  const { endpoint, route, label } = incomeTypeMap[type];
   const { data: income, isLoading } = useSWR<IncomeResponse>(`${endpoint}${id}/`, fetcher);
 
   const handleDelete = async () => {
@@ -35,7 +35,8 @@ const IncomeDetails = () => {
 
   return (
     <div className="p-4 max-w-xl mx-auto border rounded shadow-sm bg-white">
-      <h2 className="text-2xl font-bold mb-4">{income.income_name}</h2>
+      <h2 className="text-2xl font-bold mb-1">{label} Details</h2>
+      <p className="text-gray-600 mb-4 text-lg">{income.income_name}</p>
 
       <p><strong>Currency:</strong> {income.currency}</p>
       <p><strong>Amount:</strong> {income.amount}</p>
