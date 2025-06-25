@@ -13,12 +13,11 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: f"user{n}")
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     password = factory.PostGenerationMethodCall("set_password", "password123")
-    name = factory.Faker("name")
 
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
         if create and extracted:
-            self.groups.set(extracted)  # Use `.set()` instead of looping + `add()` for efficiency
+            self.groups.set(extracted)
 
 class BaseExpenseFactory(factory.django.DjangoModelFactory):
     expense_name = factory.Faker("word")

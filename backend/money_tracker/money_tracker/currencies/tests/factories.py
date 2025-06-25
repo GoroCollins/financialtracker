@@ -13,11 +13,10 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: f"user{n}")
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     password = factory.PostGenerationMethodCall("set_password", "password123")
-    name = factory.Faker("name")
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
         if create and extracted:
-            self.groups.set(extracted)  # Use `.set()` instead of looping + `add()` for efficiency
+            self.groups.set(extracted)
 
 
 class CurrencyFactory(factory.django.DjangoModelFactory):
@@ -29,7 +28,7 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("currency_name")
     is_local = False  # Default to False
     created_by = factory.SubFactory(UserFactory)
-    # modified_by = factory.SubFactory(UserFactory)
+    modified_by = None
 
     @factory.post_generation
     def set_local(self, create, extracted, **kwargs):
@@ -48,7 +47,7 @@ class ExchangeRateFactory(factory.django.DjangoModelFactory):
     currency = factory.SubFactory(CurrencyFactory)
     rate = factory.Faker("pydecimal", left_digits=6, right_digits=2, positive=True)
     created_by = factory.SubFactory(UserFactory)
-    # modified_by = factory.SubFactory(UserFactory)
+    modified_by = None
 
     @factory.post_generation
     def validate_currency(self, create, extracted, **kwargs):

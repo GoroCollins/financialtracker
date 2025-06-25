@@ -16,16 +16,11 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: f"user{n}")
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     password = factory.PostGenerationMethodCall("set_password", "password123")
-    name = factory.Faker("name")
-
+    
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
-        if not create:
-            return
-        if extracted:
-            for group in extracted:
-                self.groups.add(group)
-        self.save()  # Explicit save to ensure groups are added
+        if create and extracted:
+            self.groups.set(extracted)
 
 class InterestTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -47,7 +42,7 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("currency_name")
     is_local = False  # Default to False
     created_by = factory.SubFactory(UserFactory)
-    modified_by = factory.SubFactory(UserFactory)
+    modified_by = None
 
     @factory.post_generation
     def set_local(self, create, extracted, **kwargs):

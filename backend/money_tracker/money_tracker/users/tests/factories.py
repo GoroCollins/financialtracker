@@ -11,7 +11,6 @@ from money_tracker.users.models import User
 class UserFactory(DjangoModelFactory[User]):
     username = Faker("user_name")
     email = Faker("email")
-    name = Faker("name")
 
     @post_generation
     def password(self, create: bool, extracted: Sequence[Any], **kwargs):  # noqa: FBT001

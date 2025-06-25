@@ -14,12 +14,11 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: f"user{n}")
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     password = factory.PostGenerationMethodCall("set_password", "password123")
-    name = factory.Faker("name")
 
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
         if create and extracted:
-            self.groups.set(extracted)  # Use `.set()` instead of looping + `add()` for efficiency
+            self.groups.set(extracted)
 
 class BaseAssetFactory(factory.django.DjangoModelFactory):
     """Abstract factory for common asset fields."""
@@ -28,7 +27,7 @@ class BaseAssetFactory(factory.django.DjangoModelFactory):
     amount = factory.Faker("pydecimal", left_digits=6, right_digits=2, positive=True)
     notes = factory.Faker("text")
     created_by = factory.SubFactory(UserFactory)
-    modified_by = None  # Ensuring it's None by default
+    modified_by = None
 
     class Meta:
         abstract = True
