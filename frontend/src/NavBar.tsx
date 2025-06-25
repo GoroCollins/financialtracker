@@ -61,14 +61,21 @@ const Navbar: React.FC = () => {
             >
               Income
             </button>
-            {showIncomeMenu && (
-              <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
-                <Link className="dropdown-item" to="/income/earned">Earned Income</Link>
-                <Link className="dropdown-item" to="/income/portfolio">Portfolio Income</Link>
-                <Link className="dropdown-item" to="/income/passive">Passive Income</Link>
-              </div>
-            )}
-          </div>
+          
+          {showIncomeMenu && (
+            <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
+              <Link className="dropdown-item" to="/income/earned" onClick={() => setShowIncomeMenu(false)}>
+                Earned Income
+              </Link>
+              <Link className="dropdown-item" to="/income/portfolio" onClick={() => setShowIncomeMenu(false)}>
+                Portfolio Income
+              </Link>
+              <Link className="dropdown-item" to="/income/passive" onClick={() => setShowIncomeMenu(false)}>
+                Passive Income
+              </Link>
+            </div>
+          )}
+        </div>
 
           <div className="d-flex align-items-center" ref={dropdownRef}>
             {isLoading ? (
