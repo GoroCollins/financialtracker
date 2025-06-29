@@ -157,3 +157,45 @@ export const interestTypeResponseSchema = interestTypeSchema.extend({
 });
 
 export type InterestTypeResponse = z.infer<typeof interestTypeResponseSchema>;
+
+export const LoanFormSchema = z.object({
+  source: z.string().min(1),
+  loan_date: z.string(), // ISO string (from date input)
+  currency: z.string(),
+  amount_taken: z.number().nonnegative(),
+  reason: z.string().optional(),
+  interest_type: z.string(),
+  compound_frequency: z.string().optional(),
+  repayment_date: z.string(),
+  interest_rate: z.number().nonnegative(),
+  amount_paid: z.number().optional(),
+});
+
+export type LoanFormValues = z.infer<typeof LoanFormSchema>;
+
+export interface LoanItem {
+  id: number;
+  source: string;
+  loan_date: string;
+  currency: string;
+  amount_taken: number;
+  reason?: string;
+  interest_type: string;
+  compound_frequency?: string;
+  repayment_date: string;
+  interest_rate: number;
+  interest: number;
+  in_default: boolean;
+  created_by: string;
+  created_at: string;
+  modified_by: string | null;
+  modified_at: string | null;
+  amount_taken_lcy_display: string | null;
+  interest_lcy_display: string | null;
+  amount_repay: number;
+  amount_repay_lcy_display: string | null;
+  amount_paid: number;
+  amount_paid_lcy_display: string | null;
+  due_balance: number;
+  due_balance_lcy_display: string | null;
+}
