@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 
 interface Props {
   incomes: IncomeResponse[];
-  onDelete: (id: number) => void;
   basePath: string;
 }
 
