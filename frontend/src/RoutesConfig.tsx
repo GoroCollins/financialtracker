@@ -18,6 +18,9 @@ import CreateExchangeRate from "./currencies/NewExchangeRate";
 import IncomePage from "./pages/income/IncomePage";
 import EditIncome from "./pages/income/EditIncome";
 import IncomeDetails from "./pages/income/IncomeDetails";
+import AssetPage from "./pages/financial_assets/AssetPage";
+import AssetDetails from "./pages/financial_assets/AssetsDetails";
+import EditAsset from "./pages/financial_assets/EditAsset";
 const RoutesConfig: React.FC = () => {
   return (
     <Routes>
@@ -39,6 +42,9 @@ const RoutesConfig: React.FC = () => {
       <Route path="/income/:type" element={<IncomePage />} />
       <Route path="/income/:type/edit/:id" element={<EditIncome />} />
       <Route path="/income/:type/details/:id" element={<IncomeDetails />} />
+      <Route path="/assets/:type" element={<AssetPage />} />
+      <Route path="/assets/:type/details/:id" element={<AssetDetails />} />
+      <Route path="/assets/:type/edit/:id" element={<EditAsset />} />
       {/* Add more protected routes here */}
       </Route>
     </Routes>
