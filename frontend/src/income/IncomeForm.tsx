@@ -33,9 +33,6 @@ const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
 
     return (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mb-6">
-        <input {...register("income_name")} placeholder="Income Name" className="form-control" />
-        {errors.income_name && <p className="text-red-500">{errors.income_name.message}</p>}
-
         <select {...register("currency")} className="form-select">
           <option value="">Select Currency</option>
           {currencies
@@ -55,6 +52,8 @@ const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
             ))}
         </select>
         {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+        <input {...register("income_name")} placeholder="Income Name" className="form-control" />
+        {errors.income_name && <p className="text-red-500">{errors.income_name.message}</p>}
 
         <input type="number" step="0.01" {...register("amount", { valueAsNumber: true })} placeholder="Amount" className="form-control" />
         {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
