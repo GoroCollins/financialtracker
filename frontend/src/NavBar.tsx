@@ -8,9 +8,11 @@ const Navbar: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showIncomeMenu, setShowIncomeMenu] = useState(false);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
+  const [showExpensesMenu, setshowExpensesMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const incomeRef = useRef<HTMLDivElement | null>(null);
   const assetRef = useRef<HTMLDivElement | null>(null);
+  const expensesRef = useRef<HTMLDivElement | null>(null); 
   const { profile, isLoading, isError } = useUserProfile();
   const navigate = useNavigate();
 
@@ -103,6 +105,28 @@ const Navbar: React.FC = () => {
                 </Link>
                 <Link className="dropdown-item" to="/assets/retirement" onClick={() => setShowAssetMenu(false)}>
                   Retirement Accounts
+                </Link>
+              </div>
+            )}
+          </div>
+            {/* Expenses Menu */}
+          <div className="position-relative" ref={expensesRef}>
+            <button
+              className="btn btn-link nav-link dropdown-toggle"
+              onClick={() => setshowExpensesMenu(prev => !prev)}
+            >
+              Expenses
+            </button>
+            {showExpensesMenu && (
+              <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
+                <Link className="dropdown-item" to="/expenses/fixed" onClick={() => setshowExpensesMenu(false)}>
+                  Fixed Expenses
+                </Link>
+                <Link className="dropdown-item" to="/expenses/variable" onClick={() => setshowExpensesMenu(false)}>
+                  Variable Expenses
+                </Link>
+                <Link className="dropdown-item" to="/expenses/discretionary" onClick={() => setshowExpensesMenu(false)}>
+                  Discretionary Expenses
                 </Link>
               </div>
             )}
