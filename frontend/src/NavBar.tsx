@@ -9,12 +9,14 @@ const Navbar: React.FC = () => {
   const [showIncomeMenu, setShowIncomeMenu] = useState(false);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
   const [showExpensesMenu, setshowExpensesMenu] = useState(false);
+  const [showLiabilitiesMenu, setShowLiabilitiesMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const settingsRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const incomeRef = useRef<HTMLDivElement | null>(null);
   const assetRef = useRef<HTMLDivElement | null>(null);
   const expensesRef = useRef<HTMLDivElement | null>(null); 
+  const liabilitiesRef = useRef<HTMLDivElement | null>(null); 
   const { profile, isLoading, isError } = useUserProfile();
   const navigate = useNavigate();
 
@@ -43,13 +45,15 @@ const Navbar: React.FC = () => {
         !incomeRef.current?.contains(target) &&
         !assetRef.current?.contains(target) &&
         !expensesRef.current?.contains(target) &&
-        !settingsRef.current?.contains(target)
+        !settingsRef.current?.contains(target) &&
+        !liabilitiesRef.current?.contains(target)
       ) {
         setShowDropdown(false);
         setShowIncomeMenu(false);
         setShowAssetMenu(false);
         setshowExpensesMenu(false);
         setShowSettingsMenu(false);
+        setShowLiabilitiesMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -129,6 +133,22 @@ const Navbar: React.FC = () => {
                 </Link>
                 <Link className="dropdown-item" to="/expenses/discretionary" onClick={() => setshowExpensesMenu(false)}>
                   Discretionary Expenses
+                </Link>
+              </div>
+            )}
+          </div>
+          {/* Liabilities Menu */}
+          <div className="position-relative" ref={liabilitiesRef}>
+            <button
+              className="btn btn-link nav-link dropdown-toggle"
+              onClick={() => setShowLiabilitiesMenu(prev => !prev)}
+            >
+              Liabilities
+            </button>
+            {showLiabilitiesMenu && (
+              <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
+                <Link className="dropdown-item" to="/liabilities/loans" onClick={() => setShowLiabilitiesMenu(false)}>
+                  Loans
                 </Link>
               </div>
             )}
