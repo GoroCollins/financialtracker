@@ -24,6 +24,9 @@ import EditAsset from "./pages/financial_assets/EditAsset";
 import ExpensesPage from "./pages/expenses/ExpensesPage";
 import ExpensesDetails from "./pages/expenses/ExpensesDetails";
 import EditExpenses from "./pages/expenses/EditExpenses";
+import InterestTypePage from "./pages/liabilities/interesttypes/InterestTypePage";
+import InterestTypeDetails from "./pages/liabilities/interesttypes/InterestTypeDetails";
+import EditInterestType from "./pages/liabilities/interesttypes/EditInterestType";
 const RoutesConfig: React.FC = () => {
   return (
     <Routes>
@@ -51,6 +54,9 @@ const RoutesConfig: React.FC = () => {
       <Route path="/expenses/:type" element={<ExpensesPage />} />
       <Route path="/expenses/:type/details/:id" element={<ExpensesDetails />} />
       <Route path="/expenses/:type/edit/:id" element={<EditExpenses />} />
+      <Route path="/liabilities/interesttypes" element={<InterestTypePage />} />
+      <Route path="/liabilities/interesttypes/:code" element={<InterestTypeDetails />} />
+      <Route path="/liabilities/interesttypes/edit/:code" element={<EditInterestType />} />
       {/* Add more protected routes here */}
       </Route>
     </Routes>
