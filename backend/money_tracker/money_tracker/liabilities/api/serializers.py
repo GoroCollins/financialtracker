@@ -3,8 +3,7 @@ from ..models import Loan, InterestType
 
 
 class InterestTypeSerializer(serializers.ModelSerializer):
-    #created_by = serializers.ReadOnlyField(source='created_by.username')
-    created_by = serializers.PrimaryKeyRelatedField(read_only=True)  # Accepts user ID but does not allow editing
+    created_by = serializers.ReadOnlyField(source='created_by.username')
     created_at = serializers.DateTimeField(format="%b %d, %Y %I:%M %p", read_only=True)
     modified_by = serializers.SerializerMethodField()
     modified_at = serializers.DateTimeField(format="%b %d, %Y %I:%M %p", read_only=True)
@@ -35,8 +34,8 @@ class InterestTypeSerializer(serializers.ModelSerializer):
             validated_data["modified_by"] = request.user
         return super().update(instance, validated_data)
 class LoanSerializer(serializers.ModelSerializer):
-    #created_by = serializers.ReadOnlyField(source='created_by.username')
-    created_by = serializers.PrimaryKeyRelatedField(read_only=True)  # Accepts user ID but does not allow editing
+    created_by = serializers.ReadOnlyField(source='created_by.username')
+    # created_by = serializers.PrimaryKeyRelatedField(read_only=True)  # Accepts user ID but does not allow editing
     amount_taken_lcy_display = serializers.SerializerMethodField()
     interest_lcy_display = serializers.SerializerMethodField()
     amount_repay_lcy_display = serializers.SerializerMethodField()
@@ -48,7 +47,7 @@ class LoanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loan
         fields = [
-            'source', 'loan_date','currency', 'amount_taken', 'reason', 'interest_type', 'compound_frequency', 'repayment_date', 'interest_rate', 
+            'id', 'source', 'loan_date','currency', 'amount_taken', 'reason', 'interest_type', 'compound_frequency', 'repayment_date', 'interest_rate', 
             'interest', 'in_default', 'created_by', 'created_at', 'modified_by', 'amount_taken_lcy_display', 'modified_at', 'interest_lcy_display', 
             'amount_repay', 'amount_repay_lcy_display', 'amount_paid', 'amount_paid_lcy_display','due_balance', 'due_balance_lcy_display'
         ]
