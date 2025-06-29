@@ -7,12 +7,26 @@ export const CurrencySchema = z.object({
   is_local: z.boolean(),
 });
 
+export type CurrencyFormData = z.infer<typeof CurrencySchema>;
+
+export interface  Currency extends CurrencyFormData {
+  code: string;
+  description: string;
+  is_local: boolean;
+  created_by: string;
+  created_at: string;
+  modified_by: string | null;
+  modified_at: string;
+};
+
 export const ExchangeRateSchema = z.object({
   currency: z.string().optional(), // <- Mark as optional
   rate: z
     .number({ invalid_type_error: 'Rate must be a number' })
     .min(0.1, 'Rate must be at least 0.1'),
 });
+
+export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
 
 export const userProfileSchema = z.object({
   username: z.string(),
@@ -22,6 +36,8 @@ export const userProfileSchema = z.object({
   last_name: z.string().min(1, 'Last name is required'),
   profile_image: z.any().optional(),
 });
+
+export type UserProfileForm = z.infer<typeof userProfileSchema>;
 
 export const ChangePasswordSchema = z
   .object({
@@ -35,10 +51,6 @@ export const ChangePasswordSchema = z
   });
 
 export type FormInputs = z.infer<typeof ChangePasswordSchema>;
-export type CurrencyFormData = z.infer<typeof CurrencySchema>;
-export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
-export type UserProfileForm = z.infer<typeof userProfileSchema>;
-
 
 export const incomeSchema = z.object({
   income_name: z.string().min(1),
@@ -57,16 +69,6 @@ export interface IncomeResponse extends IncomeFormValues {
   modified_by: string | null;
   modified_at: string | null;
 }
-
-export interface  Currency extends CurrencyFormData {
-  code: string;
-  description: string;
-  is_local: boolean;
-  created_by: string;
-  created_at: string;
-  modified_by: string | null;
-  modified_at: string;
-};
 
 // Base fields for all assets
 const baseAssetSchema = z.object({
@@ -112,3 +114,21 @@ export type AssetFormValues =
   | z.infer<typeof baseAssetSchema & typeof equityAssetFields>
   | z.infer<typeof baseAssetSchema & typeof retirementAccountFields>
   | z.infer<typeof baseAssetSchema>;
+
+export const expensesSchema = z.object({
+  expense_name: z.string().min(1),
+  currency: z.string().min(1),
+  amount: z.number().nonnegative(),
+  notes: z.string().optional(),
+});
+
+export type ExpensesFormValues = z.infer<typeof expensesSchema>;
+
+export interface ExpensesResponse extends ExpensesFormValues {
+  id: number;
+  amount_lcy_display: string;
+  created_by: string;
+  created_at: string;
+  modified_by: string | null;
+  modified_at: string | null;
+}
