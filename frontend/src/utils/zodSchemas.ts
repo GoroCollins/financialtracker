@@ -9,7 +9,7 @@ export const CurrencySchema = z.object({
 
 export type CurrencyFormData = z.infer<typeof CurrencySchema>;
 
-export interface  Currency extends CurrencyFormData {
+export interface Currency extends CurrencyFormData {
   code: string;
   description: string;
   is_local: boolean;
@@ -132,3 +132,28 @@ export interface ExpensesResponse extends ExpensesFormValues {
   modified_by: string | null;
   modified_at: string | null;
 }
+
+export const interestTypeSchema = z.object({
+  code: z.string().min(1, "Code is required").max(10),
+  description: z.string().min(1, "Description is required"),
+});
+
+export type InterestTypeFormValues = z.infer<typeof interestTypeSchema>;
+
+export interface InterestTypeItem {
+  code: string;
+  description: string;
+  created_by: string;
+  created_at: string;
+  modified_by: string | null;
+  modified_at: string;
+}
+
+export const interestTypeResponseSchema = interestTypeSchema.extend({
+  created_by: z.string(),
+  created_at: z.string(),
+  modified_by: z.string().nullable(),
+  modified_at: z.string(),
+});
+
+export type InterestTypeResponse = z.infer<typeof interestTypeResponseSchema>;
