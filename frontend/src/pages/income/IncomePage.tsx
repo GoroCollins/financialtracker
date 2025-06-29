@@ -8,7 +8,7 @@ import IncomeForm from "../../income/IncomeForm";
 import IncomeList from "../../income/IncomeList";
 import { toast } from "react-hot-toast";
 import { Currency } from "../../utils/zodSchemas";
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 
 const IncomePage = () => {
   const { type } = useParams<{ type: IncomeTypeKey }>();
@@ -49,14 +49,9 @@ const IncomePage = () => {
       formRef.current?.reset();
     } catch (_) {}
   };
-
-  const handleDelete = async (id: number) => {
-    try {
-      await axiosInstance.delete(`${endpoint}${id}/`);
-      toast.success("Income deleted.");
-      await mutate();
-    } catch (_) {}
-  };
+  useEffect(() => {
+    setShowForm(false);  // Close the form
+      }, [type]);
 
   return (
     <div className="p-4">
@@ -88,7 +83,7 @@ const IncomePage = () => {
       {isLoading ? (
         <p>Loading income...</p>
       ) : (
-        <IncomeList incomes={incomes || []} onDelete={handleDelete} basePath={route} />
+        <IncomeList incomes={incomes || []} basePath={route} />
       )}
     </div>
   );
