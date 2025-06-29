@@ -10,7 +10,6 @@ import { useState } from "react";
 interface AssetDetail {
   id: number;
   name: string;
-//   asset_type: AssetTypeKey;
   currency: string;
   amount: number;
   amount_lcy_display: string;
@@ -37,12 +36,11 @@ const AssetDetails = () => {
     const { endpoint, route, label } = assetEndpointsMap[type];
     const assetDetailUrl = `${endpoint}${id}/`;
 
-  const { data: asset, mutate, isLoading } = useSWR<AssetDetail>(assetDetailUrl, fetcher);
+  const { data: asset, isLoading } = useSWR<AssetDetail>(assetDetailUrl, fetcher);
 
   const handleDelete = async () => {
     try {
       await axiosInstance.delete(assetDetailUrl);
-      await mutate();
       toast.success("Asset deleted.");
       navigate(route);
     } catch {
