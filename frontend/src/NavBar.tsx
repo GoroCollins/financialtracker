@@ -9,6 +9,8 @@ const Navbar: React.FC = () => {
   const [showIncomeMenu, setShowIncomeMenu] = useState(false);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
   const [showExpensesMenu, setshowExpensesMenu] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const settingsRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const incomeRef = useRef<HTMLDivElement | null>(null);
   const assetRef = useRef<HTMLDivElement | null>(null);
@@ -31,11 +33,6 @@ const Navbar: React.FC = () => {
     navigate('/userprofile');
   };
 
-  const handleSettings = () => {
-    setShowDropdown(false);
-    navigate('/currencies');
-  };
-
   const profileImageUrl = profile?.profile_image || placeholderProfileImage;
 
   useEffect(() => {
@@ -44,16 +41,21 @@ const Navbar: React.FC = () => {
       if (
         !dropdownRef.current?.contains(target) &&
         !incomeRef.current?.contains(target) &&
-        !assetRef.current?.contains(target)
+        !assetRef.current?.contains(target) &&
+        !expensesRef.current?.contains(target) &&
+        !settingsRef.current?.contains(target)
       ) {
         setShowDropdown(false);
         setShowIncomeMenu(false);
         setShowAssetMenu(false);
+        setshowExpensesMenu(false);
+        setShowSettingsMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom px-3">
@@ -132,6 +134,26 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
+            {/* Settings Menu */}
+            <div className="position-relative" ref={settingsRef}>
+              <button
+                className="btn btn-link nav-link dropdown-toggle"
+                onClick={() => setShowSettingsMenu(prev => !prev)}
+              >
+                Settings
+              </button>
+              {showSettingsMenu && (
+                <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
+                  <Link className="dropdown-item" to="/currencies" onClick={() => setShowSettingsMenu(false)}>
+                    Currencies
+                  </Link>
+                  <Link className="dropdown-item" to="/liabilities/interesttypes" onClick={() => setShowSettingsMenu(false)}>
+                    Interest Types
+                  </Link>
+                </div>
+              )}
+            </div>
+
           {/* Profile Dropdown */}
           <div className="d-flex align-items-center" ref={dropdownRef}>
             {isLoading ? (
@@ -160,9 +182,6 @@ const Navbar: React.FC = () => {
                 </button>
                 <button className="dropdown-item" onClick={handlePasswordChange}>
                   Change Password
-                </button>
-                <button className="dropdown-item" onClick={handleSettings}>
-                  Settings
                 </button>
                 <button className="dropdown-item d-flex align-items-center gap-2" onClick={handleLogout}>
                   <LogOut size={18} /> Logout
