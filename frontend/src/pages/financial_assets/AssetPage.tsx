@@ -9,6 +9,8 @@ import { useMemo, useState } from "react";
 import AssetForm from "../../financial_assets/AssetForm";
 import AssetList, { AssetListItem} from "../../financial_assets/AssetList";
 import { toast } from "react-hot-toast";
+import { useEffect } from "react";
+
 
 const AssetPage = () => {
   const { type } = useParams<{ type: AssetTypeKey }>();
@@ -47,14 +49,9 @@ const AssetPage = () => {
       await mutate();
     } catch (_) {}
   };
-
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await axiosInstance.delete(`${endpoint}${id}/`);
-  //     toast.success("Asset deleted.");
-  //     await mutate();
-  //   } catch (_) {}
-  // };
+  useEffect(() => {
+  setShowForm(false);  // Close the form
+    }, [type]);
 
   return (
     <div className="p-4">
@@ -69,7 +66,7 @@ const AssetPage = () => {
             + Create New Asset
           </button>
         ) : (
-          <AssetForm assetType={type} onSubmit={handleCreate} currencies={currencies} />
+          <AssetForm key={type} assetType={type} onSubmit={handleCreate} currencies={currencies} />
         )}
       </div>
 
