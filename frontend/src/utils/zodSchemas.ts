@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AssetTypeKey } from '../constants/assetTypes';
 
 export const CurrencySchema = z.object({
   code: z.string().min(1, 'Currency code is required'),
@@ -66,3 +67,48 @@ export interface  Currency extends CurrencyFormData {
   modified_by: string | null;
   modified_at: string;
 };
+
+// Base fields for all assets
+const baseAssetSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  currency: z.string().min(1, "Currency is required"),
+  amount: z.number().nonnegative("Amount must be non-negative"),
+  notes: z.string().optional(),
+});
+
+// Additional fields per asset type
+const liquidAssetFields = z.object({
+  source: z.string().min(1, "Source is required"),
+});
+
+const equityAssetFields = z.object({
+  ratio: z
+    .number({
+      required_error: "Ratio is required",
+      invalid_type_error: "Ratio must be a number",
+    })
+    .gt(0, "Ratio must be greater than 0")
+    .lte(1, "Ratio must be less than or equal to 1"), });
+
+const retirementAccountFields = z.object({
+  employer: z.string().min(1, "Employer is required"),
+});
+
+export const getAssetSchema = (assetType: AssetTypeKey) => {
+  switch (assetType) {
+    case "liquid":
+      return baseAssetSchema.merge(liquidAssetFields);
+    case "equity":
+      return baseAssetSchema.merge(equityAssetFields);
+    case "retirement":
+      return baseAssetSchema.merge(retirementAccountFields);
+    default:
+      return baseAssetSchema; // "investment"
+  }
+};
+
+export type AssetFormValues =
+  | z.infer<typeof baseAssetSchema & typeof liquidAssetFields>
+  | z.infer<typeof baseAssetSchema & typeof equityAssetFields>
+  | z.infer<typeof baseAssetSchema & typeof retirementAccountFields>
+  | z.infer<typeof baseAssetSchema>;
