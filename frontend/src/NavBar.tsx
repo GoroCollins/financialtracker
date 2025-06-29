@@ -7,8 +7,10 @@ import placeholderProfileImage from './assets/placeholder.png';
 const Navbar: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showIncomeMenu, setShowIncomeMenu] = useState(false);
+  const [showAssetMenu, setShowAssetMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const incomeRef = useRef<HTMLDivElement | null>(null);
+  const assetRef = useRef<HTMLDivElement | null>(null);
   const { profile, isLoading, isError } = useUserProfile();
   const navigate = useNavigate();
 
@@ -36,12 +38,15 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
-        dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-        incomeRef.current && !incomeRef.current.contains(event.target as Node)
+        !dropdownRef.current?.contains(target) &&
+        !incomeRef.current?.contains(target) &&
+        !assetRef.current?.contains(target)
       ) {
         setShowDropdown(false);
         setShowIncomeMenu(false);
+        setShowAssetMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -54,6 +59,7 @@ const Navbar: React.FC = () => {
         <Link to="/home" className="navbar-brand">Home</Link>
 
         <div className="d-flex align-items-center gap-4">
+          {/* Income Menu */}
           <div className="position-relative" ref={incomeRef}>
             <button
               className="btn btn-link nav-link dropdown-toggle"
@@ -61,22 +67,48 @@ const Navbar: React.FC = () => {
             >
               Income
             </button>
-          
-          {showIncomeMenu && (
-            <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
-              <Link className="dropdown-item" to="/income/earned" onClick={() => setShowIncomeMenu(false)}>
-                Earned Income
-              </Link>
-              <Link className="dropdown-item" to="/income/portfolio" onClick={() => setShowIncomeMenu(false)}>
-                Portfolio Income
-              </Link>
-              <Link className="dropdown-item" to="/income/passive" onClick={() => setShowIncomeMenu(false)}>
-                Passive Income
-              </Link>
-            </div>
-          )}
-        </div>
+            {showIncomeMenu && (
+              <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
+                <Link className="dropdown-item" to="/income/earned" onClick={() => setShowIncomeMenu(false)}>
+                  Earned Income
+                </Link>
+                <Link className="dropdown-item" to="/income/portfolio" onClick={() => setShowIncomeMenu(false)}>
+                  Portfolio Income
+                </Link>
+                <Link className="dropdown-item" to="/income/passive" onClick={() => setShowIncomeMenu(false)}>
+                  Passive Income
+                </Link>
+              </div>
+            )}
+          </div>
 
+          {/* Assets Menu */}
+          <div className="position-relative" ref={assetRef}>
+            <button
+              className="btn btn-link nav-link dropdown-toggle"
+              onClick={() => setShowAssetMenu(prev => !prev)}
+            >
+              Assets
+            </button>
+            {showAssetMenu && (
+              <div className="dropdown-menu show position-absolute mt-2 p-2 border rounded bg-white shadow">
+                <Link className="dropdown-item" to="/assets/liquid" onClick={() => setShowAssetMenu(false)}>
+                  Liquid Assets
+                </Link>
+                <Link className="dropdown-item" to="/assets/equity" onClick={() => setShowAssetMenu(false)}>
+                  Equities
+                </Link>
+                <Link className="dropdown-item" to="/assets/investment" onClick={() => setShowAssetMenu(false)}>
+                  Investment Accounts
+                </Link>
+                <Link className="dropdown-item" to="/assets/retirement" onClick={() => setShowAssetMenu(false)}>
+                  Retirement Accounts
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Profile Dropdown */}
           <div className="d-flex align-items-center" ref={dropdownRef}>
             {isLoading ? (
               <span className="me-3">Loading...</span>
@@ -90,7 +122,7 @@ const Navbar: React.FC = () => {
                 height={36}
                 className="rounded-circle cursor-pointer border"
                 style={{ objectFit: 'cover' }}
-                onClick={() => setShowDropdown((prev) => !prev)}
+                onClick={() => setShowDropdown(prev => !prev)}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = placeholderProfileImage;
                 }}
