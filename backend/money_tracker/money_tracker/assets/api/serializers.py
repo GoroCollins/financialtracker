@@ -10,6 +10,7 @@ class BaseAssetSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = [
+            "id",
             "currency",
             "amount",
             "notes",
