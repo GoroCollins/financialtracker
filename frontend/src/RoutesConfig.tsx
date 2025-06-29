@@ -27,6 +27,9 @@ import EditExpenses from "./pages/expenses/EditExpenses";
 import InterestTypePage from "./pages/liabilities/interesttypes/InterestTypePage";
 import InterestTypeDetails from "./pages/liabilities/interesttypes/InterestTypeDetails";
 import EditInterestType from "./pages/liabilities/interesttypes/EditInterestType";
+import LoansPage from "./pages/liabilities/loans/LoansPage";
+import LoanDetails from "./pages/liabilities/loans/LoanDetails";
+import EditLoan from "./pages/liabilities/loans/EditLoan";
 const RoutesConfig: React.FC = () => {
   return (
     <Routes>
@@ -57,6 +60,9 @@ const RoutesConfig: React.FC = () => {
       <Route path="/liabilities/interesttypes" element={<InterestTypePage />} />
       <Route path="/liabilities/interesttypes/:code" element={<InterestTypeDetails />} />
       <Route path="/liabilities/interesttypes/edit/:code" element={<EditInterestType />} />
+      <Route path="/liabilities/loans" element={<LoansPage />} />
+      <Route path="/liabilities/loans/:id" element={<LoanDetails />} />
+      <Route path="/liabilities/loans/edit/:id" element={<EditLoan />} />
       {/* Add more protected routes here */}
       </Route>
     </Routes>
