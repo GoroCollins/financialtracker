@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AssetTypeKey } from '../constants/assetTypes';
+import { AssetTypeKey } from '../constants/assetsTypes';
 
 export const CurrencySchema = z.object({
   code: z.string().min(1, 'Currency code is required'),
