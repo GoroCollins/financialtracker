@@ -1,4 +1,3 @@
-// components/income/IncomeForm.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IncomeFormValues, incomeSchema } from "../utils/zodSchemas";
