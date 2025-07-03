@@ -165,13 +165,17 @@ export const LoanFormSchema = z.object({
   amount_taken: z.number().nonnegative(),
   reason: z.string().optional(),
   interest_type: z.string(),
-  compound_frequency: z.string().optional(),
+  compound_frequency: z.number().nonnegative().optional().transform((val) => val ?? 0),
   repayment_date: z.string(),
   interest_rate: z.number().nonnegative(),
-  amount_paid: z.number().optional(),
+  amount_paid: z.number().nonnegative("Amount paid must not be negative").optional().transform((val) => val ?? 0),
 });
 
-export type LoanFormValues = z.infer<typeof LoanFormSchema>;
+// export type LoanFormValues = z.output<typeof LoanFormSchema>;
+export type LoanFormInput = z.input<typeof LoanFormSchema>;   // optional amount_paid
+export type LoanFormValues = z.output<typeof LoanFormSchema>; // required amount_paid
+
+
 
 export interface LoanItem {
   id: number;
@@ -181,7 +185,7 @@ export interface LoanItem {
   amount_taken: number;
   reason?: string;
   interest_type: string;
-  compound_frequency?: string;
+  compound_frequency?: number;
   repayment_date: string;
   interest_rate: number;
   interest: number;
