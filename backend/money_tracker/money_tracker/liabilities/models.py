@@ -48,7 +48,7 @@ class Loan(models.Model, CurrencyConversionMixin, InterestCalculationMixin):
     amount_taken_lcy = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     reason = models.TextField(null=False, blank=False)
     interest_type = models.ForeignKey(InterestType, on_delete=models.PROTECT, null=False, blank=False, related_name='linterest', related_query_name='linterest')
-    compound_frequency = models.IntegerField(null=True, blank=True)
+    compound_frequency = models.IntegerField(null=True, blank=True, default=0)
     repayment_date = models.DateField(null=False, blank=False)
     interest_rate = models.DecimalField(max_digits=4, decimal_places=2, default=12.50, help_text="Annual interest rate in percentage.")
     interest = models.DecimalField(max_digits=20, decimal_places=2, default=0.00, editable=False)
