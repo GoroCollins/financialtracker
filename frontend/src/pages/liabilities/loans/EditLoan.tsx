@@ -40,7 +40,7 @@ const EditLoan = () => {
     amount_taken: loan.amount_taken,
     reason: loan.reason ?? "",
     interest_type: loan.interest_type,
-    compound_frequency: loan.compound_frequency ?? "",
+    compound_frequency: loan.compound_frequency ?? 0,
     repayment_date: loan.repayment_date,
     interest_rate: loan.interest_rate,
     amount_paid: loan.amount_paid ?? 0,
