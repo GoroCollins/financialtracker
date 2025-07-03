@@ -1,11 +1,12 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
+import useSWR from "swr";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoanFormSchema, LoanFormValues } from "../../utils/zodSchemas";
-import { axiosInstance } from "../../authentication/AuthenticationService";
-import { InterestTypeItem } from "../../utils/zodSchemas";
+import { LoanFormSchema, LoanFormValues, InterestTypeItem, Currency, LoanFormInput } from "../../utils/zodSchemas";
+import { fetcher } from "../../utils/swrFetcher"; 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
 
 export interface LoanFormHandle {
   reset: () => void;
@@ -13,7 +14,7 @@ export interface LoanFormHandle {
 
 interface Props {
   onSubmit: (values: LoanFormValues) => void;
-  initialValues?: Partial<LoanFormValues>;
+  initialValues?: Partial<LoanFormInput>;
 }
 
 const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues }, ref) => {
@@ -26,12 +27,13 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
     setError,
     clearErrors,
     formState: { errors },
-  } = useForm<LoanFormValues>({
+  } = useForm<LoanFormInput, any, LoanFormValues>({
     resolver: zodResolver(LoanFormSchema),
-    defaultValues: initialValues,
+    defaultValues: initialValues as LoanFormInput,
   });
 
-  const [interestTypes, setInterestTypes] = useState<InterestTypeItem[]>([]);
+  const { data: interestTypes = [], error: interestError } = useSWR<InterestTypeItem[]>("/api/liabilities/interesttypes/", fetcher);
+  const { data: currencies = [], error: currencyError } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
 
   useImperativeHandle(ref, () => ({
     reset: () => reset(),
@@ -40,18 +42,6 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
   const selectedInterestType = watch("interest_type");
   const loanDate = watch("loan_date");
   const repaymentDate = watch("repayment_date");
-
-  useEffect(() => {
-    const fetchInterestTypes = async () => {
-      try {
-        const response = await axiosInstance.get("/api/liabilities/interesttypes/");
-        setInterestTypes(response.data);
-      } catch (error) {
-        console.error("Failed to fetch interest types", error);
-      }
-    };
-    fetchInterestTypes();
-  }, []);
 
   // Custom validation: repayment date must be after loan date
   useEffect(() => {
@@ -65,8 +55,34 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
     }
   }, [loanDate, repaymentDate, setError, clearErrors]);
 
+    if (interestError || currencyError) {
+  return <div className="text-danger">Failed to load form data.</div>;
+}
+if (!interestTypes.length || !currencies.length) {
+  return <div>Loading form options...</div>;
+}
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <select {...register("currency")} className="form-select">
+          <option value="">Select Currency</option>
+          {currencies
+            .filter((c) => c.is_local)
+            .map((currency) => (
+              <option key={currency.code} value={currency.code}>
+                {currency.code} - {currency.description}
+              </option>
+            ))}
+          {currencies.some((c) => !c.is_local) && <option disabled>──────────</option>}
+          {currencies
+            .filter((c) => !c.is_local)
+            .map((currency) => (
+              <option key={currency.code} value={currency.code}>
+                {currency.code} - {currency.description}
+              </option>
+            ))}
+        </select>
+      {errors.currency && <span className="text-danger">{errors.currency.message}</span>}
       <input className="form-control" placeholder="Source" {...register("source")} />
       {errors.source && <span className="text-danger">{errors.source.message}</span>}
 
@@ -86,8 +102,7 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
       />
       {errors.loan_date && <span className="text-danger">{errors.loan_date.message}</span>}
 
-      <input className="form-control" placeholder="Currency" {...register("currency")} />
-      <input type="number" step="0.01" className="form-control" placeholder="Amount Taken" {...register("amount_taken")} />
+      <input type="number" step="0.01" className="form-control" placeholder="Amount Taken" {...register("amount_taken", { valueAsNumber: true })} />
       <input className="form-control" placeholder="Reason" {...register("reason")} />
 
       {/* Interest Type Dropdown */}
@@ -105,7 +120,7 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
       <input
         className="form-control"
         placeholder="Compound Frequency"
-        {...register("compound_frequency")}
+        {...register("compound_frequency", { setValueAs: (val) => (val === "" ? undefined : Number(val)), })}
         disabled={selectedInterestType !== "COMPOUND"}
       />
       {errors.compound_frequency && <span className="text-danger">{errors.compound_frequency.message}</span>}
@@ -126,8 +141,10 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
       />
       {errors.repayment_date && <span className="text-danger">{errors.repayment_date.message}</span>}
 
-      <input type="number" step="0.01" className="form-control" placeholder="Interest Rate (%)" {...register("interest_rate")} />
-      <input type="number" step="0.01" className="form-control" placeholder="Amount Paid" {...register("amount_paid")} />
+      <input type="number" step="0.01" className="form-control" placeholder="Interest Rate (%)" {...register("interest_rate", { valueAsNumber: true })} />
+      <input type="number" step="0.01" className="form-control" placeholder="Amount Paid (Optional)" {...register("amount_paid", {
+    setValueAs: (val) => (val === "" ? undefined : Number(val)),
+  })} />
 
       <button className="btn btn-primary" type="submit">Save Loan</button>
     </form>
@@ -135,3 +152,4 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
 });
 
 export default LoanForm;
+
