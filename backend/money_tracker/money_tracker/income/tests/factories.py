@@ -3,7 +3,7 @@ from ..models import EarnedIncome, PortfolioIncome, PassiveIncome
 from money_tracker.currencies.tests.factories import CurrencyFactory
 from decimal import Decimal
 from django.conf import settings
-from ..mixins import CurrencyConversionMixin
+from ...currencies.mixins import CurrencyConversionMixin
 
 User = settings.AUTH_USER_MODEL
 

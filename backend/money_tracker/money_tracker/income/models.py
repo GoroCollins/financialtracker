@@ -1,8 +1,8 @@
 from django.db import models
-from money_tracker.currencies.models import Currency, ExchangeRate
+from money_tracker.currencies.models import Currency
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from .mixins import CurrencyConversionMixin
+from money_tracker.currencies.mixins import CurrencyConversionMixin
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import timezone

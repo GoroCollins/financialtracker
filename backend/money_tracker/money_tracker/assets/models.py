@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 User = settings.AUTH_USER_MODEL
 from money_tracker.currencies.models import Currency
-from .mixins import CurrencyConversionMixin
+from money_tracker.currencies.mixins import CurrencyConversionMixin
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import transaction

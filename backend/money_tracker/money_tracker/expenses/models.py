@@ -1,7 +1,7 @@
 from django.db import models
 from money_tracker.currencies.models import Currency
 from django.conf import settings
-from .mixins import CurrencyConversionMixin
+from money_tracker.currencies.mixins import CurrencyConversionMixin
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP

@@ -24,3 +24,4 @@ class CurrencyConversionMixin:
                 logger.error(f"Missing exchange rate for currency {currency}")
                 raise ValidationError({"currency": f"No exchange rate found for currency {currency}"})
 
+

@@ -1,6 +1,7 @@
 from django.db import models
 from money_tracker.currencies.models import Currency
-from .mixins import CurrencyConversionMixin, InterestCalculationMixin
+from .mixins import InterestCalculationMixin
+from money_tracker.currencies.mixins import CurrencyConversionMixin
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone

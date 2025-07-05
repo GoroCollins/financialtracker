@@ -1,4 +1,4 @@
-from income.mixins import CurrencyConversionMixin
+from backend.money_tracker.money_tracker.currencies.mixins import CurrencyConversionMixin
 import pytest
 from decimal import Decimal
 from django.core.exceptions import ValidationError, ObjectDoesNotExist

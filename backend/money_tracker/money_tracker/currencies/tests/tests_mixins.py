@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from money_tracker.expenses.mixins import CurrencyConversionMixin
+from money_tracker.currencies.mixins import CurrencyConversionMixin
 from django.test import TestCase
 from money_tracker.currencies.models import Currency, ExchangeRate
 from django.contrib.auth import get_user_model
