@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from ..models import EarnedIncome, PortfolioIncome, PassiveIncome
+from django.core.exceptions import ValidationError as DjangoValidationError
+from money_tracker.currencies.models import ExchangeRate, Currency
+
 
 class BaseIncomeSerializer(serializers.ModelSerializer):
     created_by = serializers.ReadOnlyField(source='created_by.username')
@@ -20,9 +23,12 @@ class BaseIncomeSerializer(serializers.ModelSerializer):
         return obj.modified_by.username if obj.modified_by else None
     
     def get_amount_lcy_display(self, obj):
-        # Format the amount_lcy as {local_currency_code} {amount_lcy}
         if obj.currency and obj.amount_lcy is not None:
-            return f"{obj.currency.code} {obj.amount_lcy:.2f}"
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.amount_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.amount_lcy:.2f}"  # Fallback if no local currency is defined
         return None
 
     def validate(self, data):
@@ -39,6 +45,11 @@ class BaseIncomeSerializer(serializers.ModelSerializer):
         amount = data.get("amount")
         if amount is not None and amount < 0:
             errors["amount"] = "Amount must be non-negative."
+        currency = data.get("currency")
+        
+        if currency and not currency.is_local:
+            if not ExchangeRate.objects.filter(currency=currency).exists():
+                errors["currency"] = f"No exchange rate found for currency {currency}"
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -46,16 +57,18 @@ class BaseIncomeSerializer(serializers.ModelSerializer):
         return data
         
     def create(self, validated_data):
-        """Assign the created_by user and create the exchange rate."""
+        """Assign the created_by user and create the income."""
         request = self.context.get("request", None)
         if request and request.user.is_authenticated:
             validated_data["created_by"] = request.user
             validated_data["modified_by"] = None
         else:
             raise serializers.ValidationError({"created_by": "User must be authenticated."})
-
-        return super().create(validated_data)
-    
+        
+        try:
+            return super().create(validated_data)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
     def update(self, instance, validated_data):
         """Ensure modified_by is set when updating an exchange rate."""
         request = self.context.get("request", None)
@@ -65,16 +78,18 @@ class BaseIncomeSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError({"modified_by": "User must be authenticated to modify this record."})
 
-        return super().update(instance, validated_data)
+        try:
+            return super().update(instance, validated_data)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
+    
 class EarnedIncomeSerializer(BaseIncomeSerializer):
     class Meta(BaseIncomeSerializer.Meta):
         model = EarnedIncome
 
-
 class PortfolioIncomeSerializer(BaseIncomeSerializer):
     class Meta(BaseIncomeSerializer.Meta):
         model = PortfolioIncome
-
 
 class PassiveIncomeSerializer(BaseIncomeSerializer):
     class Meta(BaseIncomeSerializer.Meta):
