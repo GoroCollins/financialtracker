@@ -5,6 +5,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { CurrencySchema, CurrencyFormData } from '../utils/zodSchemas';
 import { axiosInstance } from '../authentication/AuthenticationService';
 import { toast } from 'react-hot-toast'; // ✅ toast import
+import { Button } from 'react-bootstrap';
 
 interface ExchangeRate {
   id: number;
@@ -121,6 +122,7 @@ export default function CurrencyDetail() {
           )}
         </div>
       )}
+      <Button variant="secondary" onClick={() => navigate('/currencies')}>Back</Button>
     </div>
   );
 }
