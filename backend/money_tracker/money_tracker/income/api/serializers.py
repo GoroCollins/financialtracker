@@ -69,6 +69,7 @@ class BaseIncomeSerializer(serializers.ModelSerializer):
             return super().create(validated_data)
         except DjangoValidationError as e:
             raise serializers.ValidationError(e.message_dict)
+        
     def update(self, instance, validated_data):
         """Ensure modified_by is set when updating an exchange rate."""
         request = self.context.get("request", None)
