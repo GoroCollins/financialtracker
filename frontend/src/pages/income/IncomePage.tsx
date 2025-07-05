@@ -47,7 +47,13 @@ const IncomePage = () => {
       await mutate();
       setShowForm(false);
       formRef.current?.reset();
-    } catch (_) {}
+    } catch (error: any) {
+      if (error.response?.status === 400 && error.response.data) {
+        return error.response.data; // Return field-level errors to the form
+      }
+      // If it's not a 400 validation error, fallback to global toast
+      toast.error("Failed to create income.");
+    }
   };
   useEffect(() => {
     setShowForm(false);  // Close the form

@@ -29,14 +29,19 @@ const EditIncome = () => {
     });
   }, [rawCurrencies]);
 
-  const handleUpdate = async (payload: IncomeFormValues) => {
-    try {
-      await axiosInstance.put(`${endpoint}${id}/`, payload);
-      toast.success("Income updated.");
-      await mutate();
-      navigate(route);
-    } catch (_) {}
-  };
+  const handleUpdate = async (payload: IncomeFormValues): Promise<Record<string, string[]> | undefined> => {
+  try {
+    await axiosInstance.put(`${endpoint}${id}/`, payload);
+    toast.success("Income updated.");
+    await mutate();
+    navigate(route);
+  } catch (error: any) {
+    if (error.response?.status === 400 && error.response.data) {
+      return error.response.data; // Return validation errors
+    }
+    toast.error("Failed to update income.");
+  }
+};
 
   return (
     <div className="p-4">

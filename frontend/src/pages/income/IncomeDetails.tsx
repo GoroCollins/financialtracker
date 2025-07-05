@@ -36,7 +36,7 @@ const IncomeDetails = () => {
   return (
     <div className="p-4 max-w-xl mx-auto border rounded shadow-sm bg-white">
       <h2 className="text-2xl font-bold mb-1">{label} Details</h2>
-      <p className="text-gray-600 mb-4 text-lg">{income.income_name}</p>
+      <p className="text-gray-600 mb-4 text-lg"><strong>Income Name:</strong> {income.income_name}</p>
 
       <p><strong>Currency:</strong> {income.currency}</p>
       <p><strong>Amount:</strong> {income.amount}</p>
