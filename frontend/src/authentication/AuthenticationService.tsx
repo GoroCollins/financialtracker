@@ -86,6 +86,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
+  refreshUser: () => Promise<{ user: User } | void> ;
 }
 
 interface User {
@@ -162,23 +163,23 @@ const login = async (username: string, password: string): Promise<{ user: User }
   }
   };
 
-const fetchCurrentUser = async () => {
+const refreshUser = async (): Promise<{ user: User } | void> => {
   try {
     const response = await axiosInstance.get('/dj-rest-auth/user/');
     setUser(response.data);
-    return { user };
+    return { user: response.data };  // ✅ fixed return
   } catch (error) {
-    console.error('Failed to fetch user', error);
-    logout();  // Optional: logout if user fetch fails
+    toast.error('Failed to fetch user');
   }
 };
+
   // Persist login state across page reloads
   useEffect(() => {
     const token = Cookies.get(ACCESS_TOKEN_COOKIE);
     if (token) {
       axiosInstance.defaults.headers['Authorization'] = `Bearer ${token}`;
       setIsAuthenticated(true);
-      fetchCurrentUser(); // Optionally, fetch user data here if it's not already in cookies
+      refreshUser(); // Optionally, fetch user data here if it's not already in cookies
     }
     setLoading(false); // Done loading
   }, []);
@@ -189,7 +190,8 @@ const fetchCurrentUser = async () => {
       logout,
       isAuthenticated,
       user,
-      loading
+      loading,
+      refreshUser
     }),
     [isAuthenticated, user] // Dependencies
   );
