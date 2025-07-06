@@ -5,7 +5,7 @@ import { useEffect, forwardRef, useImperativeHandle } from "react";
 
 interface ExpensesFormProps {
   initialValues?: ExpensesFormValues;
-  onSubmit: (data: ExpensesFormValues) => void;
+  onSubmit: (data: ExpensesFormValues) => Promise<Record<string, string[]> | undefined>;
   isEditing?: boolean;
   currencies: Currency[];
 }
@@ -16,22 +16,27 @@ export interface ExpensesFormHandle {
 
 const ExpensesForm = forwardRef<ExpensesFormHandle, ExpensesFormProps>(
   ({ initialValues, onSubmit, isEditing = false, currencies }, ref) => {
-    const { register, handleSubmit, reset, formState: { errors }
+    const { register, handleSubmit, reset, setError, formState: { errors }
     } = useForm<ExpensesFormValues>({
   resolver: zodResolver(expensesSchema), defaultValues: initialValues? { ...initialValues, amount: Number(initialValues.amount) }: undefined, });
     useEffect(() => {
       if (initialValues) {
-        reset({
-          ...initialValues,
-          amount: Number(initialValues.amount),
-        });
+        reset({ ...initialValues, amount: Number(initialValues.amount), });
       }
     }, [initialValues, reset]);
 
     useImperativeHandle(ref, () => ({ reset }), [reset]);
 
+    const handleFormSubmit = async (data: ExpensesFormValues) => {
+        const backendErrors = await onSubmit(data);
+        if (backendErrors) { Object.entries(backendErrors).forEach(([field, messages]) => {
+            setError(field as keyof ExpensesFormValues, { type: "server", message: messages.join(" "), });
+    });
+        }
+      };
+
     return (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mb-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-w-md mb-6">
         <select {...register("currency")} className="form-select">
           <option value="">Select Currency</option>
           {currencies
