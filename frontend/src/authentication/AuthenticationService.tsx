@@ -73,13 +73,14 @@ axiosInstance.interceptors.response.use(
         }
       }
       // ✅ Show toast for all other failed requests (except refresh and login)
-      if (!originalRequest?.url?.includes('/token/refresh/') && !originalRequest?.url?.includes('/login/')) {
+      if (!originalRequest?.url?.includes('/token/refresh/') && !originalRequest?.url?.includes('/login/') && !originalRequest?.suppressGlobalError ) {
         const message = extractErrorMessage(error);
         toast.error(message);
       }
       return Promise.reject(error);
     }
   );
+  
 interface AuthContextType {
   login: (username: string, password: string) => Promise<{ user: User }>;
   logout: () => Promise<void>;
