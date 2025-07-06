@@ -35,8 +35,8 @@ const ExpensesDetails = () => {
 
   return (
     <div className="p-4 max-w-xl mx-auto border rounded shadow-sm bg-white">
-      <h2 className="text-2xl font-bold mb-1">{label} Details</h2>
-      <p className="text-gray-600 mb-4 text-lg">{expense.expense_name}</p>
+      <h2 className="text-2xl font-bold mb-1">{label.endsWith("s") ? label.slice(0, -1) : label} Details</h2>
+      <p className="text-gray-600 mb-4 text-lg"><strong>Name:</strong> {expense.expense_name}</p>
 
       <p><strong>Currency:</strong> {expense.currency}</p>
       <p><strong>Amount:</strong> {expense.amount}</p>
