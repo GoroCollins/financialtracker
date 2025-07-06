@@ -8,7 +8,6 @@ router = DefaultRouter()
 router.register('earnedincome', EarnedIncomeViewSet, basename='earnedincome')
 router.register('portfolioincome', PortfolioIncomeViewSet, basename='portfolioincome')
 router.register('passiveincome', PassiveIncomeViewSet, basename='passiveincome')
-#router.register('currencies', CurrencyViewSet, basename='currencies')
 
 app_name = "income"
 
