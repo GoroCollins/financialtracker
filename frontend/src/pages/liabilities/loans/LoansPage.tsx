@@ -11,17 +11,21 @@ const LoanPage = () => {
   const [showForm, setShowForm] = useState(false);
   const formRef = useRef<LoanFormHandle>(null);
 
-  const { data: loans, mutate } = useSWR<LoanItem[]>("/api/liabilities/loans/", fetcher);
+  const { data: loans, error, mutate } = useSWR<LoanItem[]>("/api/liabilities/loans/", fetcher);
 
-  const handleCreate = async (values: LoanFormValues) => {
+  const handleCreate = async (values: LoanFormValues)  => {
     try {
       await axiosInstance.post("/api/liabilities/loans/", values);
       toast.success("Loan created.");
       await mutate();
       formRef.current?.reset();
       setShowForm(false);
-    } catch {
-      toast.error("Error creating loan.");
+    } catch (error: any) {
+      if (error.response?.status === 400 && error.response.data) {
+        return error.response.data; // Return field-level errors to the form
+      }
+      // If it's not a 400 validation error, fallback to global toast
+      toast.error("Failed to create loan.");
     }
   };
 
@@ -30,7 +34,7 @@ const LoanPage = () => {
       <h1 className="text-2xl font-bold mb-4">Loans</h1>
 
       {!showForm && (
-        <button className="btn btn-primary mb-4" onClick={() => setShowForm(true)}>
+        <button type="button" className="btn btn-primary mb-4" onClick={() => setShowForm(true)}>
           + New Loan
         </button>
       )}
@@ -39,11 +43,9 @@ const LoanPage = () => {
         <LoanForm onSubmit={handleCreate} ref={formRef} />
       )}
 
-      {loans ? (
-        <LoanList loans={loans} basePath="/liabilities/loans" />
-      ) : (
-        <p>Loading loans...</p>
-      )}
+      {error ? ( <p className="text-red-600">Failed to load loans.</p>) 
+      : loans ? ( <LoanList loans={loans} basePath="/liabilities/loans" />) 
+      : ( <p>Loading loans...</p> )}
     </div>
   );
 };

@@ -20,15 +20,18 @@ const EditLoan = () => {
     if (error) toast.error("Failed to load loan.");
   }, [error]);
 
-  const handleUpdate = async (payload: LoanFormValues) => {
+  const handleUpdate = async (payload: LoanFormValues): Promise<Record<string, string[]> | undefined> => {
     try {
       await axiosInstance.put(`/api/liabilities/loans/${id}/`, payload);
       toast.success("Loan updated successfully.");
       await mutate();
       navigate(`/liabilities/loans/${id}`);
-    } catch {
-      toast.error("Failed to update loan.");
+    } catch (error: any) {
+    if (error.response?.status === 400 && error.response.data) {
+      return error.response.data; // Return validation errors
     }
+    toast.error("Failed to update loan.");
+  }
   };
 
   if (isLoading || !loan) return <p>Loading loan...</p>;
