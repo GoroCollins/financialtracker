@@ -5,7 +5,7 @@ from . serializers import EarnedIncomeSerializer, PortfolioIncomeSerializer, Pas
 from rest_framework.views import APIView
 from django.db.models import Sum
 from rest_framework.response import Response
-from itertools import chain
+from money_tracker.currencies.models import Currency
 # Create your views here.
 # Base ViewSet for common functionality
 class BaseIncomeViewSet(viewsets.ModelViewSet):
@@ -46,30 +46,21 @@ class TotalIncomeAPIView(APIView):
         user = request.user
         if not user.is_authenticated:
             return Response({"detail":"Authenticated Required"}, status=status.HTTP_401_UNAUTHORIZED)
+        # Fetch the user's local currency code (assuming only one local currency)
+        local_currency = Currency.objects.filter(is_local=True).first()
+        currency_code = local_currency.code if local_currency else "N/A"
         # Calculate the total income for each type
-        earned_income_total = EarnedIncome.objects.filter(created_by=user).aggregate(total=Sum('amount'))['total'] or 0
-        portfolio_income_total = PortfolioIncome.objects.filter(created_by=user).aggregate(total=Sum('amount'))['total'] or 0
-        passive_income_total = PassiveIncome.objects.filter(created_by=user).aggregate(total=Sum('amount'))['total'] or 0
+        earned_income_total = EarnedIncome.objects.filter(created_by=user).aggregate(total=Sum('amount_lcy'))['total'] or 0
+        portfolio_income_total = PortfolioIncome.objects.filter(created_by=user).aggregate(total=Sum('amount_lcy'))['total'] or 0
+        passive_income_total = PassiveIncome.objects.filter(created_by=user).aggregate(total=Sum('amount_lcy'))['total'] or 0
 
         # Sum all incomes
         total_income = earned_income_total + portfolio_income_total + passive_income_total
-        return Response({"total_income": total_income}, status=status.HTTP_200_OK)
-
-# Executes a single query through union
-# class TotalIncomeAPIView(APIView):
-#     def calculate_total_income(self):
-#         # Combine all models into one iterable
-#         total_income = sum(
-#             obj["total"]
-#             for obj in chain(
-#                 EarnedIncome.objects.aggregate(total=Sum('amount')).values(),
-#                 PortfolioIncome.objects.aggregate(total=Sum('amount')).values(),
-#                 PassiveIncome.objects.aggregate(total=Sum('amount')).values(),
-#             )
-#             if obj["total"] is not None
-#         )
-#         return total_income
-
-#     def get(self, request):
-#         return Response({"total_income": self.calculate_total_income()}, status=status.HTTP_200_OK)
+        return Response({
+            "currency_code": currency_code,
+            "total_income": total_income,
+            "earned_income": earned_income_total,
+            "portfolio_income": portfolio_income_total,
+            "passive_income": passive_income_total
+        }, status=status.HTTP_200_OK)
 
