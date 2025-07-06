@@ -12,6 +12,7 @@ from django.http import Http404
 import logging
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError as DjangoValidationError
+from django.db.models import ProtectedError
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -57,9 +58,8 @@ class CurrencyViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         try:
             self.perform_destroy(instance)
-        except DjangoValidationError as e:
-            logger.error(f"ValidationError on delete: {e.messages}")
-            raise DRFValidationError(e.messages)
+        except ProtectedError:
+            return Response({"detail": "This currency is already in use and cannot be deleted."}, status=status.HTTP_400_BAD_REQUEST, )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
