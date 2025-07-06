@@ -33,7 +33,7 @@ const AssetDetails = () => {
     return <div className="p-4 text-red-600">Invalid asset type or ID.</div>;
     }
 
-    const { endpoint, route, label } = assetEndpointsMap[type];
+    const { endpoint, route, singularLabel } = assetEndpointsMap[type];
     const assetDetailUrl = `${endpoint}${id}/`;
 
   const { data: asset, isLoading } = useSWR<AssetDetail>(assetDetailUrl, fetcher);
@@ -54,11 +54,10 @@ const AssetDetails = () => {
         <p>Loading asset details...</p>
       ) : asset ? (
         <>
-          <h2 className="text-2xl font-bold mb-1">{label} Details</h2>
-          <p className="text-2xl font-bold mb-4">{asset.name}</p>
+          <h2 className="text-2xl font-bold mb-1">{singularLabel} Details</h2>
+          <p className="text-2xl font-bold mb-4"><strong>Name:</strong> {asset.name}</p>
 
           <div className="space-y-2 text-sm text-gray-700">
-            <p><strong>Name:</strong> {asset.name.toUpperCase()}</p>
             <p><strong>Currency:</strong> {asset.currency}</p>
             <p><strong>Amount:</strong> {asset.amount}</p>
             <p><strong>Amount (LCY):</strong> {asset.amount_lcy_display}</p>
