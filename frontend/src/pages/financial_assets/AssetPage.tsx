@@ -3,14 +3,11 @@ import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
-import { AssetFormValues } from "../../utils/zodSchemas";
-import { Currency } from "../../utils/zodSchemas";
-import { useMemo, useState } from "react";
+import { AssetFormValues, Currency } from "../../utils/zodSchemas";
+import { useMemo, useState, useEffect } from "react";
 import AssetForm from "../../financial_assets/AssetForm";
 import AssetList, { AssetListItem} from "../../financial_assets/AssetList";
 import { toast } from "react-hot-toast";
-import { useEffect } from "react";
-
 
 const AssetPage = () => {
   const { type } = useParams<{ type: AssetTypeKey }>();
@@ -27,7 +24,6 @@ const AssetPage = () => {
     mutate,
     isLoading
   } = useSWR(`${endpoint}`, fetcher);
-
   const {
     data: rawCurrencies,
     isLoading: currenciesLoading
@@ -47,7 +43,13 @@ const AssetPage = () => {
       toast.success("Asset created.");
       setShowForm(false);
       await mutate();
-    } catch (_) {}
+    } catch (error: any) {
+      if (error.response?.status === 400 && error.response.data) {
+        return error.response.data; // Return field-level errors to the form
+      }
+      // If it's not a 400 validation error, fallback to global toast
+      toast.error("Failed to create asset.");
+    }
   };
   useEffect(() => {
   setShowForm(false);  // Close the form

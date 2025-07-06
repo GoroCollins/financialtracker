@@ -37,14 +37,17 @@ const EditAsset = () => {
     });
   }, [rawCurrencies]);
 
-  const handleUpdate = async (payload: AssetFormValues) => {
+  const handleUpdate = async (payload: AssetFormValues): Promise<Record<string, string[]> | undefined>  => {
     try {
       await axiosInstance.put(`${endpoint}${id}/`, payload);
       toast.success("Asset updated.");
       navigate(route);
-    } catch {
-      toast.error("Failed to update asset.");
+    } catch (error: any) {
+    if (error.response?.status === 400 && error.response.data) {
+      return error.response.data; // Return validation errors
     }
+    toast.error("Failed to update asset.");
+  }
   };
 
   return (

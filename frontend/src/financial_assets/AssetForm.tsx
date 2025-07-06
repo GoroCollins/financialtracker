@@ -8,7 +8,7 @@ import { AssetFormValues, getAssetSchema } from "../utils/zodSchemas";
 interface Props {
   assetType: AssetTypeKey;
   initialValues?: AssetFormValues;
-  onSubmit: (data: AssetFormValues) => void;
+  onSubmit: (data: AssetFormValues) => Promise<Record<string, string[]> | undefined>;
   isEditing?: boolean;
   currencies: Currency[];
 }
@@ -23,15 +23,7 @@ const AssetForm: React.FC<Props> = ({
   // Dynamically get schema for selected asset type
   const schema = useMemo(() => getAssetSchema(assetType), [assetType]);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm<AssetFormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: initialValues || {}
-  });
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<AssetFormValues>({resolver: zodResolver(schema), defaultValues: initialValues || {} });
 
 useEffect(() => {
   if (initialValues) {
@@ -48,9 +40,20 @@ useEffect(() => {
   }
 }, [initialValues, reset, assetType]);
 
+  const handleFormSubmit = async (data: AssetFormValues) => {
+    const backendErrors = await onSubmit(data);
+    if (backendErrors) { Object.entries(backendErrors).forEach(([field, messages]) => {
+        setError(field as keyof AssetFormValues, {
+          type: "server",
+          message: messages.join(" "),
+        });
+});
+    }
+  };
+
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mb-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-w-md mb-6">
       <select {...register("currency")} className="form-select">
         <option value="">Select Currency</option>
         {currencies
@@ -74,13 +77,7 @@ useEffect(() => {
       <input {...register("name")} placeholder="Asset Name" className="form-control" />
       {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
-      <input
-        type="number"
-        step="0.01"
-        {...register("amount", { valueAsNumber: true })}
-        placeholder="Amount"
-        className="form-control"
-      />
+      <input type="number" step="0.01" {...register("amount", { valueAsNumber: true })} placeholder="Amount" className="form-control" />
       {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
 
       {assetType === "liquid" && (
@@ -92,13 +89,7 @@ useEffect(() => {
 
       {assetType === "equity" && (
         <>
-          <input
-            type="number"
-            step="0.01"
-            {...register("ratio", { valueAsNumber: true })}
-            placeholder="Ratio"
-            className="form-control"
-          />
+          <input type="number" step="0.01" {...register("ratio", { valueAsNumber: true })} placeholder="Ratio" className="form-control" />
           {"ratio" in errors && <p className="text-red-500">{errors.ratio?.message}</p>}
         </>
       )}
