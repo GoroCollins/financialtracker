@@ -35,6 +35,7 @@ class InterestTypeSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             validated_data["modified_by"] = request.user
         return super().update(instance, validated_data)
+    
 class LoanSerializer(serializers.ModelSerializer):
     created_by = serializers.ReadOnlyField(source='created_by.username')
     # created_by = serializers.PrimaryKeyRelatedField(read_only=True)  # Accepts user ID but does not allow editing
@@ -60,13 +61,13 @@ class LoanSerializer(serializers.ModelSerializer):
         """Ensure modified_by remains NULL on creation and is only set on update."""
         return obj.modified_by.username if obj.modified_by else None
     
-    def get_amount_lcy_display(self, obj):
-        if obj.currency and obj.amount_lcy is not None:
+    def get_amount_taken_lcy_display(self, obj):
+        if obj.currency and obj.amount_taken_lcy is not None:
             try:
                 local_currency = Currency.objects.get(is_local=True)
-                return f"{local_currency.code} {obj.amount_lcy:.2f}"
+                return f"{local_currency.code} {obj.amount_taken_lcy:.2f}"
             except Currency.DoesNotExist:
-                return f"{obj.amount_lcy:.2f}"  # Fallback if no local currency is defined
+                return f"{obj.amount_taken_lcy:.2f}"  # Fallback if no local currency is defined
         return None
     
     def get_interest_lcy_display(self, obj):
@@ -147,7 +148,12 @@ class LoanSerializer(serializers.ModelSerializer):
         try:
             return super().create(validated_data)
         except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict)
+            if hasattr(e, "message_dict"):
+                raise serializers.ValidationError(e.message_dict)
+            elif hasattr(e, "messages"):
+                raise serializers.ValidationError({"non_field_errors": e.messages})
+            else:
+                raise serializers.ValidationError({"non_field_errors": [str(e)]})
     
     def update(self, instance, validated_data):
         request = self.context.get("request")
@@ -158,4 +164,9 @@ class LoanSerializer(serializers.ModelSerializer):
         try:
             return super().update(instance, validated_data)
         except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict)
+            if hasattr(e, "message_dict"):
+                raise serializers.ValidationError(e.message_dict)
+            elif hasattr(e, "messages"):
+                raise serializers.ValidationError({"non_field_errors": e.messages})
+            else:
+                raise serializers.ValidationError({"non_field_errors": [str(e)]})
