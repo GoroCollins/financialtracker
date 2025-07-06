@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from ..models import FixedExpense, VariableExpense, DiscretionaryExpense
+from django.core.exceptions import ValidationError as DjangoValidationError
+from money_tracker.currencies.models import Currency, ExchangeRate
 
 class BaseExpenseSerializer(serializers.ModelSerializer):
     created_by = serializers.ReadOnlyField(source='created_by.username')
@@ -12,16 +14,19 @@ class BaseExpenseSerializer(serializers.ModelSerializer):
             "id", "expense_name", "currency", "amount", "notes", "created_by", "created_at",
             "modified_by", "modified_at", "amount_lcy_display",
         ]
-        read_only_fields = ["created_by", "created_at", "modified_by", "modified_at"]
+        read_only_fields = ["created_by", "created_at", "modified_by", "modified_at", "amount_lcy_display"]
 
     def get_modified_by(self, obj):
         """Ensure modified_by remains NULL on creation and is only set on update."""
         return obj.modified_by.username if obj.modified_by else None
 
     def get_amount_lcy_display(self, obj):
-        """Format the amount_lcy as {local_currency_code} {amount_lcy}"""
         if obj.currency and obj.amount_lcy is not None:
-            return f"{obj.currency.code} {obj.amount_lcy:.2f}"
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.amount_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.amount_lcy:.2f}"  # Fallback if no local currency is defined
         return None
 
     def validate(self, data):
@@ -38,6 +43,12 @@ class BaseExpenseSerializer(serializers.ModelSerializer):
         amount = data.get("amount")
         if amount is not None and amount < 0:
             errors["amount"] = "Amount must be non-negative."
+        
+        currency = data.get("currency")
+        
+        if currency and not currency.is_local:
+            if not ExchangeRate.objects.filter(currency=currency).exists():
+                errors["currency"] = f"No exchange rate found for currency {currency}"
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -53,7 +64,10 @@ class BaseExpenseSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError({"created_by": "User must be authenticated."})
 
-        return super().create(validated_data)
+        try:
+            return super().create(validated_data)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
 
     def update(self, instance, validated_data):
         """Ensure modified_by is set when updating an expense."""
@@ -63,7 +77,10 @@ class BaseExpenseSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError({"modified_by": "User must be authenticated to modify this record."})
 
-        return super().update(instance, validated_data)
+        try:
+            return super().update(instance, validated_data)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
 
 # Concrete Serializers for each expense type
 class FixedExpenseSerializer(BaseExpenseSerializer):
