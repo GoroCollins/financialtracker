@@ -12,8 +12,9 @@ const Home: React.FC = () => {
     if (hour >= 17 && hour < 21) return 'Good Evening';
     return 'Good Night';
   };
-
-  const capitalize = (full_name: string) => full_name.charAt(0).toUpperCase() + full_name.slice(1);
+  // Function to capitalize each word in the full name by splitting the full name by spaces, capitalizes the first letter of each word
+  // and then joins them back together.
+  const capitalize = (full_name: string) => full_name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
   return (
     <div className="container mt-5">
