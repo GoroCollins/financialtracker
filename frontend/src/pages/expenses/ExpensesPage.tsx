@@ -3,11 +3,10 @@ import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
-import { ExpensesFormValues, ExpensesResponse } from "../../utils/zodSchemas";
+import { ExpensesFormValues, ExpensesResponse, Currency } from "../../utils/zodSchemas";
 import ExpensesForm from "../../expenses/ExpensesForm";
 import ExpensesList from "../../expenses/ExpensesList";
 import { toast } from "react-hot-toast";
-import { Currency } from "../../utils/zodSchemas";
 import { useMemo, useState, useRef, useEffect } from "react";
 
 const ExpensesPage = () => {
@@ -21,16 +20,9 @@ const ExpensesPage = () => {
 
   const { endpoint, label, route } = expensesTypeMap[type];
 
-  const {
-    data: expenses,
-    mutate,
-    isLoading,
-  } = useSWR<ExpensesResponse[]>(endpoint, fetcher);
+  const { data: expenses, mutate, isLoading, } = useSWR<ExpensesResponse[]>(endpoint, fetcher);
 
-  const {
-    data: rawCurrencies,
-    isLoading: currenciesLoading,
-  } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
+  const { data: rawCurrencies, isLoading: currenciesLoading, } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
 
   const currencies = useMemo(() => {
     if (!Array.isArray(rawCurrencies)) return [];
@@ -47,7 +39,13 @@ const ExpensesPage = () => {
       await mutate();
       setShowForm(false);
       formRef.current?.reset();
-    } catch (_) {}
+    } catch (error: any) {
+      if (error.response?.status === 400 && error.response.data) {
+        return error.response.data; // Return field-level errors to the form
+      }
+      // If it's not a 400 validation error, fallback to global toast
+      toast.error("Failed to create expense.");
+    }
   };
  useEffect(() => {
     setShowForm(false);  // Close the form

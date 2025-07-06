@@ -29,13 +29,18 @@ const EditExpenses = () => {
     });
   }, [rawCurrencies]);
 
-  const handleUpdate = async (payload: ExpensesFormValues) => {
+  const handleUpdate = async (payload: ExpensesFormValues): Promise<Record<string, string[]> | undefined>  => {
     try {
       await axiosInstance.put(`${endpoint}${id}/`, payload);
       toast.success("Income updated.");
       await mutate();
       navigate(route);
-    } catch (_) {}
+    } catch (error: any) {
+    if (error.response?.status === 400 && error.response.data) {
+      return error.response.data; // Return validation errors
+    }
+    toast.error("Failed to update expense.");
+  }
   };
 
   return (
