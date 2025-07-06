@@ -87,19 +87,15 @@ class LiquidAssetSerializer(BaseAssetSerializer):
         model = LiquidAsset
         fields = ["source", "name"] + list(BaseAssetSerializer.Meta.fields)
         
-
-
 class EquitySerializer(BaseAssetSerializer):
     class Meta(BaseAssetSerializer.Meta):
         model = Equity
         fields = ["name", "ratio"] + list(BaseAssetSerializer.Meta.fields)
 
-
 class InvestmentAccountSerializer(BaseAssetSerializer):
     class Meta(BaseAssetSerializer.Meta):
         model = InvestmentAccount
         fields = ["name"] + list(BaseAssetSerializer.Meta.fields)
-
 
 class RetirementAccountSerializer(BaseAssetSerializer):
     class Meta(BaseAssetSerializer.Meta):
