@@ -2,25 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useSWR from 'swr';
-import { axiosInstance } from './AuthenticationService';
+import { axiosInstance, useAuthService } from './AuthenticationService';
 import { Button, Form } from 'react-bootstrap';
 import placeholderProfileImage from '../assets/placeholder.png';
 import { toast } from 'react-hot-toast';
 import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
+import { useNavigate } from "react-router-dom";
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
 const UserProfile: React.FC = () => {
+  const { refreshUser } = useAuthService();
   const { data: user, error, mutate } = useSWR('/dj-rest-auth/user/', fetcher);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<UserProfileForm>({
-    resolver: zodResolver(userProfileSchema),
-  });
-
+  const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors }, setValue, } = useForm<UserProfileForm>({ resolver: zodResolver(userProfileSchema), });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,7 +47,9 @@ const UserProfile: React.FC = () => {
         },
       });
       toast.success('Profile updated successfully');
-      mutate();
+      await mutate();
+      await refreshUser();
+      navigate('/home');
     } catch (err) {
       console.error("Error updating profile:", err);
       toast.error('Failed to update profile');
