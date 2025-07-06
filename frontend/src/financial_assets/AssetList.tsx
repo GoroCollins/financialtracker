@@ -24,7 +24,7 @@ const AssetList: React.FC<Props> = ({ assets, basePath }) => (
       <div key={asset.id} className="border p-4 rounded shadow-sm">
         <div className="text-lg font-semibold">{asset.name}</div>
         <div className="text-gray-600 text-sm">
-          • {asset.currency} {asset.amount} — {asset.amount_lcy_display}
+          {asset.currency} {asset.amount} — {asset.amount_lcy_display}
         </div>
         <div className="text-sm text-gray-500 mt-1">
           Created by {asset.created_by} on {asset.created_at}
