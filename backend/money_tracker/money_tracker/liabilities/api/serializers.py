@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from ..models import Loan, InterestType
+from money_tracker.currencies.models import Currency, ExchangeRate
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 
 class InterestTypeSerializer(serializers.ModelSerializer):
@@ -51,48 +53,58 @@ class LoanSerializer(serializers.ModelSerializer):
             'interest', 'in_default', 'created_by', 'created_at', 'modified_by', 'amount_taken_lcy_display', 'modified_at', 'interest_lcy_display', 
             'amount_repay', 'amount_repay_lcy_display', 'amount_paid', 'amount_paid_lcy_display','due_balance', 'due_balance_lcy_display'
         ]
-        read_only_fields = ['interest', 'amount_repay', 'due_balance', 'in_default']
+        read_only_fields = ['interest', 'amount_repay', 'due_balance', 'in_default', 'amount_taken_lcy_display', 
+                            'interest_lcy_display', 'amount_repay_lcy_display', 'amount_paid_lcy_display', 'due_balance_lcy_display', 
+                            'created_by', 'created_at', 'modified_by', 'modified_at']
     def get_modified_by(self, obj):
         """Ensure modified_by remains NULL on creation and is only set on update."""
         return obj.modified_by.username if obj.modified_by else None
     
-    def get_amount_taken_lcy_display(self, obj):
-        # Format the amount_lcy as {local_currency_code} {amount_lcy}
-        if obj.currency and obj.amount_taken_lcy is not None:
-            return f"{obj.currency.code} {obj.amount_taken_lcy:.2f}"
+    def get_amount_lcy_display(self, obj):
+        if obj.currency and obj.amount_lcy is not None:
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.amount_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.amount_lcy:.2f}"  # Fallback if no local currency is defined
         return None
     
     def get_interest_lcy_display(self, obj):
-        # Format the amount_lcy as {local_currency_code} {amount_lcy}
         if obj.currency and obj.interest_lcy is not None:
-            return f"{obj.currency.code} {obj.interest_lcy:.2f}"
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.interest_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.interest_lcy:.2f}"  # Fallback if no local currency is defined
         return None
     
     def get_amount_repay_lcy_display(self, obj):
-        # Format the amount_lcy as {local_currency_code} {amount_lcy}
         if obj.currency and obj.amount_repay_lcy is not None:
-            return f"{obj.currency.code} {obj.amount_repay_lcy:.2f}"
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.amount_repay_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.amount_repay_lcy:.2f}"  # Fallback if no local currency is defined
         return None
     
-    
     def get_amount_paid_lcy_display(self, obj):
-        # Format the amount_lcy as {local_currency_code} {amount_lcy}
         if obj.currency and obj.amount_paid_lcy is not None:
-            return f"{obj.currency.code} {obj.amount_paid_lcy:.2f}"
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.amount_paid_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.amount_paid_lcy:.2f}"  # Fallback if no local currency is defined
         return None
     
     def get_due_balance_lcy_display(self, obj):
-        # Format the amount_lcy as {local_currency_code} {amount_lcy}
         if obj.currency and obj.due_balance_lcy is not None:
-            return f"{obj.currency.code} {obj.due_balance_lcy:.2f}"
+            try:
+                local_currency = Currency.objects.get(is_local=True)
+                return f"{local_currency.code} {obj.due_balance_lcy:.2f}"
+            except Currency.DoesNotExist:
+                return f"{obj.due_balance_lcy:.2f}"  # Fallback if no local currency is defined
         return None
 
-    def validate(self, data):
-        amount_taken = data.get('amount_taken')
-        if amount_taken is not None and amount_taken < 0:
-            raise serializers.ValidationError("Loan amount must be non-negative.")
-        return data
-    
     def validate(self, data):
         """Perform cross-field validation and assign errors to specific fields."""
         errors = {}
@@ -114,6 +126,12 @@ class LoanSerializer(serializers.ModelSerializer):
         # Assuming interest_type is an object, adjust based on your model structure
         if interest_type and interest_type.code == "COMPOUND" and not compound_frequency:
             errors["compound_frequency"] = "Compound frequency is required for compound interest."
+            
+        currency = data.get("currency")
+        
+        if currency and not currency.is_local:
+            if not ExchangeRate.objects.filter(currency=currency).exists():
+                errors["currency"] = f"No exchange rate found for currency {currency}"
         if errors:
             raise serializers.ValidationError(errors)
 
@@ -126,7 +144,10 @@ class LoanSerializer(serializers.ModelSerializer):
 
         validated_data["created_by"] = request.user
         validated_data["modified_by"] = None  # Ensure modified_by is null on creation
-        return super().create(validated_data)
+        try:
+            return super().create(validated_data)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
     
     def update(self, instance, validated_data):
         request = self.context.get("request")
@@ -134,4 +155,7 @@ class LoanSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"modified_by": "User must be authenticated to modify this record."})
 
         validated_data["modified_by"] = request.user
-        return super().update(instance, validated_data)
+        try:
+            return super().update(instance, validated_data)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
