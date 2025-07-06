@@ -62,7 +62,7 @@ const AssetDetails = () => {
             <p><strong>Amount:</strong> {asset.amount}</p>
             <p><strong>Amount (LCY):</strong> {asset.amount_lcy_display}</p>
             {asset.source && <p><strong>Source:</strong> {asset.source}</p>}
-            {asset.ratio !== undefined && <p><strong>Ratio:</strong> {asset.ratio}</p>}
+            {asset.ratio !== undefined && (<p> <strong>Ratio:</strong> {(asset.ratio * 100).toFixed(2)}% </p> )}
             {asset.employer && <p><strong>Employer:</strong> {asset.employer}</p>}
             {asset.notes && <p><strong>Notes:</strong> {asset.notes}</p>}
             <p><strong>Created By:</strong> {asset.created_by} on {asset.created_at}</p>
