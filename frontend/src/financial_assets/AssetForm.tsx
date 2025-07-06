@@ -1,9 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
-import { Currency } from "../utils/zodSchemas";
 import { AssetTypeKey } from "../constants/assetsTypes";
-import { AssetFormValues, getAssetSchema } from "../utils/zodSchemas";
+import { AssetFormValues, getAssetSchema, Currency } from "../utils/zodSchemas";
 
 interface Props {
   assetType: AssetTypeKey;
@@ -23,7 +22,8 @@ const AssetForm: React.FC<Props> = ({
   // Dynamically get schema for selected asset type
   const schema = useMemo(() => getAssetSchema(assetType), [assetType]);
 
-  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<AssetFormValues>({resolver: zodResolver(schema), defaultValues: initialValues || {} });
+  const { register, handleSubmit, reset, setError, formState: { errors } } 
+  = useForm<AssetFormValues>({resolver: zodResolver(schema), defaultValues: initialValues || {} });
 
 useEffect(() => {
   if (initialValues) {
@@ -43,10 +43,7 @@ useEffect(() => {
   const handleFormSubmit = async (data: AssetFormValues) => {
     const backendErrors = await onSubmit(data);
     if (backendErrors) { Object.entries(backendErrors).forEach(([field, messages]) => {
-        setError(field as keyof AssetFormValues, {
-          type: "server",
-          message: messages.join(" "),
-        });
+        setError(field as keyof AssetFormValues, { type: "server", message: messages.join(" "), });
 });
     }
   };
