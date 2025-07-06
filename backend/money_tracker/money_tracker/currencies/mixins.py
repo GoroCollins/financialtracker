@@ -1,5 +1,6 @@
 from money_tracker.currencies.models import ExchangeRate
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from decimal import Decimal
 import logging
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class CurrencyConversionMixin:
         else:
             try:
                 exchange_rate = ExchangeRate.objects.get(currency=currency)
-                return amount * exchange_rate.rate 
+                return Decimal(str(amount)) * exchange_rate.rate 
             except ObjectDoesNotExist:
                 # Log the error and raise a ValidationError
                 logger.error(f"Missing exchange rate for currency {currency}")
