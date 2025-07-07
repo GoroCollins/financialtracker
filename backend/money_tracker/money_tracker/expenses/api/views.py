@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.db.models import Sum
 from rest_framework.response import Response
@@ -70,5 +70,10 @@ class TotalExpensesAPIView(APIView):
         discretionary_expenses_total = DiscretionaryExpense.objects.filter(created_by=user).aggregate(total=Sum("amount"))["total"] or 0
 
         total_expenses = fixed_expenses_total + variable_expenses_total + discretionary_expenses_total
-
-        return Response({"total_expenses": total_expenses})
+        
+        return Response({
+            "total_expenses": total_expenses,
+            "fixed_expenses": fixed_expenses_total,
+            "variable_expenses": variable_expenses_total,
+            "discretionary_expenses": discretionary_expenses_total,
+        }, status=status.HTTP_200_OK)
