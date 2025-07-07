@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { CurrencySchema, CurrencyFormData } from '../utils/zodSchemas';
+import { CurrencySchema, CurrencyFormData, ExchangeRate } from '../utils/zodSchemas';
 import { axiosInstance } from '../authentication/AuthenticationService';
 import { toast } from 'react-hot-toast';
 import { Button } from 'react-bootstrap';
@@ -10,12 +10,6 @@ import ConfirmModal from '../ConfirmModal';
 import useSWR from 'swr';
 import { fetcher } from '../utils/swrFetcher';
 
-interface ExchangeRate {
-  id: number;
-  rate: string;
-  created_by: string;
-  created_at: string;
-}
 
 export default function CurrencyDetail() {
   const { code } = useParams<{ code: string }>();
@@ -26,7 +20,7 @@ export default function CurrencyDetail() {
 
   const { data: currency, error: currencyError, mutate: currencyData } = useSWR(`/api/currencies/currencies/${code}/`, fetcher, { onSuccess: (data) => reset(data),});
 
-  const { data: exchangeRates, error: exchangerateError } = useSWR(currency?.is_local === false ? `/api/currencies/exchangerates/?currency=${currency.code}` : null, fetcher );
+  const { data: exchangeRates, error: exchangerateError, mutate: refreshRates } = useSWR(currency?.is_local === false ? `/api/currencies/exchangerates/?currency=${currency.code}` : null, fetcher );
 
 
   const onSubmit = async (data: CurrencyFormData) => {
@@ -107,13 +101,49 @@ export default function CurrencyDetail() {
             <p className="text-gray-600">No exchange rates recorded yet.</p>
           ) : (
             <ul className="space-y-2">
-              {exchangeRates?.map((rate: ExchangeRate) => (
-                <li key={rate.id} className="border p-2 rounded">
-                  <p><strong>Rate:</strong> {rate.rate}</p>
-                  <p><strong>Created by:</strong> {rate.created_by}</p>
-                  <p><strong>Created at:</strong> {new Date(rate.created_at).toLocaleString()}</p>
-                </li>
-              ))}
+                  {exchangeRates?.map((rate: ExchangeRate) => (
+                    <li key={rate.id} className="border p-2 rounded">
+                      <p><strong>Rate:</strong> {rate.rate}</p>
+                      <p><strong>Created by:</strong> {rate.created_by}</p>
+                      <p><strong>Created at:</strong> {new Date(rate.created_at).toLocaleString()}</p>
+
+                      <label className="inline-flex items-center gap-2 mt-1">
+                        <input
+                          type="checkbox"
+                          checked={rate.is_current}
+                          onChange={async () => {
+                            if (!exchangeRates) return;
+
+                            const optimisticRates = exchangeRates.map((r: ExchangeRate) =>
+                              r.id === rate.id ? { ...r, is_current: !r.is_current } : r
+                            );
+
+                            // Optimistically update the UI
+                            await refreshRates(optimisticRates, false);
+
+                            try {
+                              await axiosInstance.patch(`/api/currencies/exchangerates/${rate.id}/`, {
+                                is_current: !rate.is_current,
+                              });
+
+                              toast.success(`Exchange rate ${!rate.is_current ? 'marked' : 'unmarked'} as current`);
+
+                              // Revalidate with fresh data
+                              await refreshRates();
+                            } catch (error: any) {
+                              const msg = error?.response?.data?.detail || 'Failed to update current status';
+                              toast.error(msg);
+                              // Rollback to original state
+                              await refreshRates(); 
+                            }
+                          }}
+                        />
+                        <span className="text-sm">Current</span>
+                      </label>
+                    </li>
+                  ))}
+
+
             </ul>
           )}
         </div>
