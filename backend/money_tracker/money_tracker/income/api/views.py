@@ -46,9 +46,6 @@ class TotalIncomeAPIView(APIView):
         user = request.user
         if not user.is_authenticated:
             return Response({"detail":"Authenticated Required"}, status=status.HTTP_401_UNAUTHORIZED)
-        # Fetch the user's local currency code (assuming only one local currency)
-        local_currency = Currency.objects.filter(is_local=True).first()
-        currency_code = local_currency.code if local_currency else "N/A"
         # Calculate the total income for each type
         earned_income_total = EarnedIncome.objects.filter(created_by=user).aggregate(total=Sum('amount_lcy'))['total'] or 0
         portfolio_income_total = PortfolioIncome.objects.filter(created_by=user).aggregate(total=Sum('amount_lcy'))['total'] or 0
@@ -57,7 +54,6 @@ class TotalIncomeAPIView(APIView):
         # Sum all incomes
         total_income = earned_income_total + portfolio_income_total + passive_income_total
         return Response({
-            "currency_code": currency_code,
             "total_income": total_income,
             "earned_income": earned_income_total,
             "portfolio_income": portfolio_income_total,
