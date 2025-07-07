@@ -20,13 +20,20 @@ export interface Currency extends CurrencyFormData {
 };
 
 export const ExchangeRateSchema = z.object({
-  currency: z.string().optional(), // <- Mark as optional
-  rate: z
-    .number({ invalid_type_error: 'Rate must be a number' })
-    .min(0.1, 'Rate must be at least 0.1'),
+  currency: z.string().optional(), // Still optional since it's derived from `useParams`
+  rate: z.number({ invalid_type_error: 'Rate must be a number' }).min(0.1, 'Rate must be at least 0.1'),
+  is_current: z.boolean({required_error: 'Please specify if this is the current exchange rate',}),
 });
 
 export type ExchangeRateFormData = z.infer<typeof ExchangeRateSchema>;
+
+export interface ExchangeRate {
+  id: number;
+  rate: string;
+  created_by: string;
+  created_at: string;
+  is_current: boolean;
+}
 
 export const userProfileSchema = z.object({
   username: z.string(),
