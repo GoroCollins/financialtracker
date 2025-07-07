@@ -5,8 +5,9 @@ import { fetcher } from './utils/swrFetcher';
 
 const Home: React.FC = () => {
   const { user } = useAuthService();
-  const { data: incomeTotals, error: incometotalsError, isLoading: incometotalsLoading } = useSWR('/api/income/totalincome', fetcher);
   const {data: localCurrency, error: localcurrencyError, isLoading: localcurrencyLoading} = useSWR('/api/currencies/get-localcurrency', fetcher);
+  const { data: incomeTotals, error: incometotalsError, isLoading: incometotalsLoading } = useSWR('/api/income/totalincome', fetcher);
+  const { data: assetsTotals, error: assetstotalsError, isLoading: assetstotalsLoading } = useSWR('/api/assets/totalassets', fetcher);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -27,6 +28,8 @@ const Home: React.FC = () => {
       {localcurrencyLoading && <p>Loading local currency...</p>}
       {incometotalsLoading && <p>Loading total income...</p>}
       {incometotalsError && <p className="text-danger">Failed to load income data.</p>}
+      {assetstotalsLoading && <p>Loading total assets...</p>}
+      {assetstotalsError && <p className="text-danger">Failed to load assets data.</p>}
 
       {incomeTotals && (
         <div className="mt-4">
@@ -35,6 +38,18 @@ const Home: React.FC = () => {
             <li>Earned Income: {localCurrency.local_currency_code} {Number(incomeTotals.earned_income).toFixed(2)}</li>
             <li>Portfolio Income: {localCurrency.local_currency_code} {Number(incomeTotals.portfolio_income).toFixed(2)}</li>
             <li>Passive Income: {localCurrency.local_currency_code} {Number(incomeTotals.passive_income).toFixed(2)}</li>
+          </ul>
+        </div>
+      )}
+
+      {assetsTotals && (
+        <div className="mt-4">
+          <h4>Your Total Assets: {localCurrency.local_currency_code} {Number(assetsTotals.total_assets).toFixed(2)}</h4>
+          <ul className="mt-2">
+            <li>Liquid Assets: {localCurrency.local_currency_code} {Number(assetsTotals.liquid_assets).toFixed(2)}</li>
+            <li>Equities: {localCurrency.local_currency_code} {Number(assetsTotals.equities).toFixed(2)}</li>
+            <li>Investment Accounts: {localCurrency.local_currency_code} {Number(assetsTotals.investment_accounts).toFixed(2)}</li>
+            <li>Retirement Accounts: {localCurrency.local_currency_code} {Number(assetsTotals.retirement_accounts).toFixed(2)}</li>
           </ul>
         </div>
       )}
