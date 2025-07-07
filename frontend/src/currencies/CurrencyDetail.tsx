@@ -15,6 +15,7 @@ export default function CurrencyDetail() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const { register, handleSubmit, reset, formState: { errors }, } = useForm<CurrencyFormData>({ resolver: zodResolver(CurrencySchema) });
 
@@ -86,67 +87,78 @@ export default function CurrencyDetail() {
         onConfirm={handleDelete}
       />
 
-      {!currency.is_local && (
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">Exchange Rate History</h3>
-            <Link
-              to={`/currencies/${code}/exchange-rate/create`}
-              className="bg-indigo-600 text-white px-4 py-1 rounded text-sm"
-            >
-              Add Exchange Rate
-            </Link>
-          </div>
-          {exchangeRates?.length === 0 ? (
-            <p className="text-gray-600">No exchange rates recorded yet.</p>
-          ) : (
-            <ul className="space-y-2">
-                  {exchangeRates?.map((rate: ExchangeRate) => (
-                    <li key={rate.id} className="border p-2 rounded">
-                      <p><strong>Rate:</strong> {rate.rate}</p>
-                      <p><strong>Created by:</strong> {rate.created_by}</p>
-                      <p><strong>Created at:</strong> {new Date(rate.created_at).toLocaleString()}</p>
+      {!currency.is_local && exchangeRates && (
+            <div className="mt-6">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-semibold">Exchange Rate</h3>
+                <Link to={`/currencies/${code}/exchange-rate/create`} className="bg-indigo-600 text-white px-4 py-1 rounded text-sm">Add Exchange Rate</Link>
+              </div>
 
-                      <label className="inline-flex items-center gap-2 mt-1">
-                        <input
-                          type="checkbox"
-                          checked={rate.is_current}
-                          onChange={async () => {
-                            if (!exchangeRates) return;
+              {exchangeRates.length === 0 ? (
+                <p className="text-gray-600">No exchange rates recorded yet.</p>
+              ) : (
+                <>
+                  {/* Current rate display */}
+                  {exchangeRates.filter((rate: ExchangeRate) => rate.is_current)
+                    .map((rate: ExchangeRate) => (
+                      <li key={rate.id} className="border border-green-400 p-3 rounded mb-3 bg-green-50">
+                        <p><strong>Rate:</strong> {rate.rate}</p>
+                        <p><strong>Created by:</strong> {rate.created_by}</p>
+                        <p><strong>Created at:</strong> {new Date(rate.created_at).toLocaleString()}</p>
 
-                            const optimisticRates = exchangeRates.map((r: ExchangeRate) =>
-                              r.id === rate.id ? { ...r, is_current: !r.is_current } : r
-                            );
+                        <label className="inline-flex items-center gap-2 mt-2">
+                          <input
+                            type="checkbox"
+                            checked={rate.is_current}
+                            onChange={async () => {
+                              const optimisticRates = exchangeRates.map((r: ExchangeRate) =>
+                                r.id === rate.id ? { ...r, is_current: !r.is_current } : r
+                              );
+                              await refreshRates(optimisticRates, false);
 
-                            // Optimistically update the UI
-                            await refreshRates(optimisticRates, false);
+                              try {
+                                await axiosInstance.patch(`/api/currencies/exchangerates/${rate.id}/`, {
+                                  is_current: !rate.is_current,
+                                });
+                                toast.success(`Exchange rate ${!rate.is_current ? 'marked' : 'unmarked'} as current`);
+                                await refreshRates();
+                              } catch (error: any) {
+                                const msg = error?.response?.data?.detail || 'Failed to update current status';
+                                toast.error(msg);
+                                await refreshRates();
+                              }
+                            }}
+                          />
+                          <span className="text-sm">Current</span>
+                        </label>
+                      </li>
+                    ))}
 
-                            try {
-                              await axiosInstance.patch(`/api/currencies/exchangerates/${rate.id}/`, {
-                                is_current: !rate.is_current,
-                              });
+                  {/* Toggle history section */}
+                  <button
+                    onClick={() => setShowHistory((prev) => !prev)}
+                    className="text-sm text-indigo-600 hover:text-indigo-800 mt-1 mb-3 underline transition"
+                  >
+                    {showHistory ? 'Hide History' : 'Show History'}
+                  </button>
 
-                              toast.success(`Exchange rate ${!rate.is_current ? 'marked' : 'unmarked'} as current`);
-
-                              // Revalidate with fresh data
-                              await refreshRates();
-                            } catch (error: any) {
-                              const msg = error?.response?.data?.detail || 'Failed to update current status';
-                              toast.error(msg);
-                              // Rollback to original state
-                              await refreshRates(); 
-                            }
-                          }}
-                        />
-                        <span className="text-sm">Current</span>
-                      </label>
-                    </li>
-                  ))}
-
-
-            </ul>
-          )}
-        </div>
+                  {/* Collapsible history */}
+                  <div className={`transition-all duration-300 ease-in-out ${showHistory ? 'max-h-screen' : 'max-h-0 overflow-hidden'}`}>
+                    <ul className="space-y-2">
+                      {exchangeRates
+                        .filter((rate: ExchangeRate) => !rate.is_current)
+                        .map((rate: ExchangeRate) => (
+                          <li key={rate.id} className="border p-2 rounded bg-gray-50">
+                            <p><strong>Rate:</strong> {rate.rate}</p>
+                            <p><strong>Created by:</strong> {rate.created_by}</p>
+                            <p><strong>Created at:</strong> {new Date(rate.created_at).toLocaleString()}</p>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
       )}
       <Button variant="secondary" onClick={() => navigate('/currencies')}>Back</Button>
     </div>
