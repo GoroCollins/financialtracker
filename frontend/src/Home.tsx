@@ -30,7 +30,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="container mt-5">
-      <h2>{getGreeting()} {user?.full_name ? capitalize(user.full_name) : 'there'}, welcome to home page </h2>
+      <h2>{getGreeting()} {user?.full_name ? capitalize(user.full_name) : 'there'}, welcome</h2>
       {localcurrencyError && <p className="text-danger">Failed to load local currency.</p>}
       {localcurrencyLoading && <p>Loading local currency...</p>}
       {incometotalsLoading && <p>Loading total income...</p>}
