@@ -14,22 +14,12 @@ logger = logging.getLogger(__name__)
 
 # Create your models here.
 class Currency(models.Model):
-    code = models.CharField(
-        max_length=5,
-        validators=[
-            RegexValidator(r"^[A-Z]{3}$", "Currency code must be 3 uppercase letters.")
-        ],
-        primary_key=True
-    )
+    code = models.CharField(max_length=5, validators=[RegexValidator(r"^[A-Z]{3}$", "Currency code must be 3 uppercase letters.")], primary_key=True)
     description = models.CharField(max_length=100, null=False, blank=False)
     is_local = models.BooleanField(null=False, blank=False)
-    created_by = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name='ccreator', related_query_name='ccreator'
-    )
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ccreator', related_query_name='ccreator')
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_by = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name='cmodifier', related_query_name='cmodifier', blank=True, null=True
-    )
+    modified_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='cmodifier', related_query_name='cmodifier', blank=True, null=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
@@ -77,11 +67,7 @@ class Currency(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["is_local"],
-                condition=models.Q(is_local=True),
-                name="unique_local_currency"
-            )
+            models.UniqueConstraint(fields=["is_local"], condition=models.Q(is_local=True), name="unique_local_currency")
         ]
         indexes = [
             models.Index(fields=["is_local"]),
@@ -90,35 +76,14 @@ class Currency(models.Model):
         verbose_name_plural = "Currencies"
 
 class ExchangeRate(models.Model):
-    currency = models.ForeignKey(
-        Currency,
-        on_delete=models.PROTECT,
-        related_name='exchange_rates',
-        related_query_name='exchange_rate',
-        blank=False,
-        null=False
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, related_name='exchange_rates', related_query_name='exchange_rate', blank=False, null=False)
+    rate = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(Decimal("0.1"))],
+                               help_text="Exchange rate against the local currency in two decimal places."
     )
-    rate = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.1"))],
-        help_text="Exchange rate against the local currency in two decimal places."
-    )
-    created_by = models.ForeignKey(
-        User,
-        on_delete=models.PROTECT,
-        related_name='ercreator',
-        related_query_name='ercreator'
-    )
+    is_current = models.BooleanField(null=False)
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ercreator', related_query_name='ercreator')
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_by = models.ForeignKey(
-        User,
-        on_delete=models.PROTECT,
-        related_name='ermodifier',
-        related_query_name='ermodifier',
-        blank=True,
-        null=True
-    )
+    modified_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ermodifier', related_query_name='ermodifier', blank=True, null=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
@@ -136,29 +101,52 @@ class ExchangeRate(models.Model):
         )
 
     def clean(self):
-        """Ensure that the currency is not local."""
         if self.currency.is_local:
             raise ValidationError("Exchange rates cannot be assigned to a local currency.")
-        # Round the rate to 2 decimal places
+
         if isinstance(self.rate, Decimal):
             self.rate = self.rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
+        if self.is_current:
+            existing_current = ExchangeRate.objects.filter(
+                currency=self.currency,
+                is_current=True
+            ).exclude(pk=self.pk).exists()
+            if existing_current:
+                raise ValidationError("Only one exchange rate can be marked as current per currency.")
+            
+    def is_updating_only_is_current(self, original):
+        changed_fields = []
+        for field in ['rate', 'currency']:
+            if getattr(self, field) != getattr(original, field):
+                changed_fields.append(field)
+        return not changed_fields
+
+
     def save(self, *args, **kwargs):
-        """Ensure modified_by is set when updating a record and handle validation."""
-        is_new = self._state.adding  # True if creating a new record
-
-        if not is_new and not self.modified_by:
-            raise ValidationError("modifier must be specified for updating a record.")
-
+        if not self._state.adding:
+            original = ExchangeRate.objects.get(pk=self.pk)
+            if not self.modified_by:
+                raise ValidationError("modifier must be specified for updating a record.")
+            if not self.is_updating_only_is_current(original):
+                raise ValidationError("Only the 'is_current' field can be updated.")
+        
         try:
             with transaction.atomic():
-                self.full_clean()  # Validate the model before saving
+                self.full_clean()
                 super().save(*args, **kwargs)
         except IntegrityError as e:
             if "unique_currency_per_day" in str(e):
                 raise ValidationError("Only one exchange rate per currency per day is allowed.")
             else:
                 raise ValidationError(f"An error occurred while saving the exchange rate: {str(e)}")
+            
+    def delete(self, *args, **kwargs):
+        if self.is_current:
+            raise ValidationError("Current exchange rate cannot be deleted. Please set another rate as current before deleting.")
+        super().delete(*args, **kwargs)
+
+
 
     class Meta:
         indexes = [
