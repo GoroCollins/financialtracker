@@ -59,5 +59,12 @@ class TotalAssetsAPIView(APIView):
         retirement_account_total = RetirementAccount.objects.filter(created_by=user).aggregate(total=Sum('amount'))['total'] or 0
 
         total_assets = liquid_assets_total + equity_total + investment_account_total + retirement_account_total
-
-        return Response({"total_assets": total_assets}, status=status.HTTP_200_OK)
+        
+        return Response({
+            "total_assets": total_assets,
+            "liquid_assets": liquid_assets_total,
+            "equities": equity_total,
+            "investment_accounts": investment_account_total,
+            "retirement_accounts": retirement_account_total,
+        }, status=status.HTTP_200_OK)
+    
