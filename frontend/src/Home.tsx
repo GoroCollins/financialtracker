@@ -5,7 +5,8 @@ import { fetcher } from './utils/swrFetcher';
 
 const Home: React.FC = () => {
   const { user } = useAuthService();
-  const { data: incomeTotals, error, isLoading } = useSWR('/api/income/totalincome', fetcher);
+  const { data: incomeTotals, error: incometotalsError, isLoading: incometotalsLoading } = useSWR('/api/income/totalincome', fetcher);
+  const {data: localCurrency, error: localcurrencyError, isLoading: localcurrencyLoading} = useSWR('/api/currencies/get-localcurrency', fetcher);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -22,16 +23,18 @@ const Home: React.FC = () => {
   return (
     <div className="container mt-5">
       <h2>{getGreeting()} {user?.full_name ? capitalize(user.full_name) : 'there'}, welcome to home page </h2>
-      {isLoading && <p>Loading total income...</p>}
-      {error && <p className="text-danger">Failed to load income data.</p>}
+      {localcurrencyError && <p className="text-danger">Failed to load local currency.</p>}
+      {localcurrencyLoading && <p>Loading local currency...</p>}
+      {incometotalsLoading && <p>Loading total income...</p>}
+      {incometotalsError && <p className="text-danger">Failed to load income data.</p>}
 
       {incomeTotals && (
         <div className="mt-4">
-          <h4>Your Total Income: {incomeTotals.currency_code} {Number(incomeTotals.total_income).toFixed(2)}</h4>
+          <h4>Your Total Income: {localCurrency} {Number(incomeTotals.total_income).toFixed(2)}</h4>
           <ul className="mt-2">
-            <li>Earned Income: {incomeTotals.currency_code} {Number(incomeTotals.earned_income).toFixed(2)}</li>
-            <li>Portfolio Income: {incomeTotals.currency_code} {Number(incomeTotals.portfolio_income).toFixed(2)}</li>
-            <li>Passive Income: {incomeTotals.currency_code} {Number(incomeTotals.passive_income).toFixed(2)}</li>
+            <li>Earned Income: {localCurrency} {Number(incomeTotals.earned_income).toFixed(2)}</li>
+            <li>Portfolio Income: {localCurrency} {Number(incomeTotals.portfolio_income).toFixed(2)}</li>
+            <li>Passive Income: {localCurrency} {Number(incomeTotals.passive_income).toFixed(2)}</li>
           </ul>
         </div>
       )}
