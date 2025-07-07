@@ -42,4 +42,4 @@ class TotalLiabilitiesAPIView(APIView):
 
         total_liabilities = loan_total 
 
-        return Response({"total_liabilities": total_liabilities})
+        return Response({"total_liabilities": total_liabilities}, status=status.HTTP_200_OK)
