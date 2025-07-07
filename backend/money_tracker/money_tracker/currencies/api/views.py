@@ -83,31 +83,38 @@ class ExchangeRateViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         try:
             serializer.save(created_by=self.request.user)
-        except DRFValidationError as e:
+        except (DjangoValidationError, DRFValidationError) as e:
             logger.error(f"ValidationError while creating exchange rate: {str(e)}")
-            raise DRFValidationError(e.detail if hasattr(e, 'detail') else str(e))
+            raise DRFValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
 
     def perform_update(self, serializer):
         instance = self.get_object()
         data = serializer.validated_data
-        has_changes = any(getattr(instance, field) != value for field, value in data.items())
 
-        if has_changes:
-            try:
-                serializer.save(modified_by=self.request.user)
-            except DRFValidationError as e:
-                logger.error(f"ValidationError while updating exchange rate: {str(e)}")
-                raise DRFValidationError(e.detail if hasattr(e, 'detail') else str(e))
+        allowed_fields = {"is_current"}
+        invalid_fields = set(data.keys()) - allowed_fields
 
+        if invalid_fields:
+            logger.warning(f"Attempted to update forbidden fields: {invalid_fields}")
+            raise DRFValidationError(f"Only the 'is_current' field can be updated. Invalid fields: {', '.join(invalid_fields)}")
+
+        try:
+            serializer.save(modified_by=self.request.user)
+        except (DjangoValidationError, DRFValidationError) as e:
+            logger.error(f"ValidationError while updating is_current: {str(e)}")
+            raise DRFValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
     
-    # def perform_destroy(self, instance):
-    #     """Prevent deletion if the exchange rate was created on the user's join date."""
-    #     user = self.request.user
-
-    #     if hasattr(user, "date_joined") and instance.created_at.date() == user.date_joined.date():
-    #         raise ValidationError("You cannot delete an exchange rate created on your join date.")
-
-    #     instance.delete()
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            instance.delete()
+        except DjangoValidationError as e:
+            logger.warning(f"Attempt to delete current exchange rate: {str(e)}")
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class GetLocalCurrencyAPIView(APIView):
     """API to fetch the local currency code."""
