@@ -58,15 +58,8 @@ class ExchangeRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExchangeRate
         fields = [
-            "id",
-            "currency",
-            "currency_description",
-            "rate",
-            "created_by",
-            "created_at",
-            "modified_by",
-            "modified_at",
-            'currency_is_local',
+            "id", "currency", "currency_description", "rate", "is_current", "created_by",
+            "created_at", "modified_by", "modified_at", "currency_is_local",
         ]
         read_only_fields = ["created_at", "modified_at"]
     
