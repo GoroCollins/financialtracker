@@ -30,11 +30,11 @@ const Home: React.FC = () => {
 
       {incomeTotals && (
         <div className="mt-4">
-          <h4>Your Total Income: {localCurrency} {Number(incomeTotals.total_income).toFixed(2)}</h4>
+          <h4>Your Total Income: {localCurrency.local_currency_code} {Number(incomeTotals.total_income).toFixed(2)}</h4>
           <ul className="mt-2">
-            <li>Earned Income: {localCurrency} {Number(incomeTotals.earned_income).toFixed(2)}</li>
-            <li>Portfolio Income: {localCurrency} {Number(incomeTotals.portfolio_income).toFixed(2)}</li>
-            <li>Passive Income: {localCurrency} {Number(incomeTotals.passive_income).toFixed(2)}</li>
+            <li>Earned Income: {localCurrency.local_currency_code} {Number(incomeTotals.earned_income).toFixed(2)}</li>
+            <li>Portfolio Income: {localCurrency.local_currency_code} {Number(incomeTotals.portfolio_income).toFixed(2)}</li>
+            <li>Passive Income: {localCurrency.local_currency_code} {Number(incomeTotals.passive_income).toFixed(2)}</li>
           </ul>
         </div>
       )}
