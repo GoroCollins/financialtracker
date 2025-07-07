@@ -9,18 +9,26 @@ import { toast } from 'react-hot-toast';
 export default function CreateExchangeRate() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState('');
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset
-  } = useForm<ExchangeRateFormData>({ resolver: zodResolver(ExchangeRateSchema) });
-
-  const [errorMessage, setErrorMessage] = useState('');
+  } = useForm<ExchangeRateFormData>({
+    resolver: zodResolver(ExchangeRateSchema),
+    // defaultValues: {
+    //   is_current: true, // Default assumption
+    // },
+  });
 
   const onSubmit = async (data: ExchangeRateFormData) => {
     try {
-      await axiosInstance.post('/api/currencies/exchangerates/', { ...data, currency: code });
+      await axiosInstance.post('/api/currencies/exchangerates/', {
+        ...data,
+        currency: code,
+      });
       toast.success('Exchange rate saved!');
       reset();
       navigate(`/currencies/${code}`);
@@ -52,6 +60,12 @@ export default function CreateExchangeRate() {
             className="border w-full p-2 rounded"
           />
           {errors.rate && <p className="text-red-600 text-sm mt-1">{errors.rate.message}</p>}
+        </div>
+
+        <div>
+          <label className="block mb-1 font-medium">Is Current?</label>
+          <input type="checkbox" {...register('is_current')} />
+          {errors.is_current && <p className="text-red-600 text-sm mt-1">{errors.is_current.message}</p>}
         </div>
 
         <div className="flex gap-2">
