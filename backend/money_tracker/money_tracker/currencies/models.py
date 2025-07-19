@@ -14,9 +14,10 @@ logger = logging.getLogger(__name__)
 
 # Create your models here.
 class Currency(models.Model):
-    code = models.CharField(max_length=5, validators=[RegexValidator(r"^[A-Z]{3}$", "Currency code must be 3 uppercase letters.")], primary_key=True)
+    # code = models.CharField(max_length=5, validators=[RegexValidator(r"^[A-Z]{3}$", "Currency code must be 3 uppercase letters.")], primary_key=True)
+    code = models.CharField(max_length=3, primary_key=True, help_text="ISO 4217 currency code (e.g. KES, USD)")
     description = models.CharField(max_length=100, null=False, blank=False)
-    is_local = models.BooleanField(null=False, blank=False)
+    is_local = models.BooleanField(null=False, blank=False, default=False, help_text="Is this the local currency?")
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ccreator', related_query_name='ccreator')
     created_at = models.DateTimeField(auto_now_add=True)
     modified_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='cmodifier', related_query_name='cmodifier', blank=True, null=True)
@@ -32,10 +33,10 @@ class Currency(models.Model):
             if existing_local:
                 raise ValidationError("Only one local currency is allowed.")
         # Allow foreign currency only if at least one currency exists else raise an error
-        else:  
-            # Ensure at least one local currency exists
-            if not Currency.objects.filter(is_local=True).exists():
-                raise ValidationError("Cannot set this currency as foreign; no local currency exists.")
+        # else:  
+        #     # Ensure at least one local currency exists
+        #     if not Currency.objects.filter(is_local=True).exists():
+        #         raise ValidationError("Cannot set this currency as foreign; no local currency exists.")
 
     def save(self, *args, **kwargs):
         """Ensure modified_by is set when updating a record and handle validation."""
@@ -74,6 +75,7 @@ class Currency(models.Model):
             models.Index(fields=["code"])
         ]
         verbose_name_plural = "Currencies"
+        ordering = ["is_local",]
 
 class ExchangeRate(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, related_name='exchange_rates', related_query_name='exchange_rate', blank=False, null=False)
