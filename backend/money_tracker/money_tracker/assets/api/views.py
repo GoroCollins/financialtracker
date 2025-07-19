@@ -25,7 +25,7 @@ class BaseAssetViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
 
-@extend_schema(tags=["Liquid Assets"])
+@extend_schema(tags=["Liquid Assets"],)
 class LiquidAssetViewSet(BaseAssetViewSet):
     queryset = LiquidAsset.objects.all()
     serializer_class = LiquidAssetSerializer
