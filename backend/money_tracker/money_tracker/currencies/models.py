@@ -75,7 +75,7 @@ class Currency(models.Model):
             models.Index(fields=["code"])
         ]
         verbose_name_plural = "Currencies"
-        ordering = ["is_local",]
+        ordering = ['-is_local', 'code']
 
 class ExchangeRate(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, related_name='exchange_rates', related_query_name='exchange_rate', blank=False, null=False)
