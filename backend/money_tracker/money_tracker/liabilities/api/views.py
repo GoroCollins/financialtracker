@@ -1,11 +1,14 @@
 from .. models import Loan, InterestType
+from drf_spectacular.utils import extend_schema
 from . serializers import LoanSerializer, InterestTypeSerializer
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from django.db.models import Sum
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+
 # Create your views here.
+@extend_schema(tags=["Loans"])
 class LoanViewSet(viewsets.ModelViewSet):
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
@@ -19,6 +22,7 @@ class LoanViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
 
+@extend_schema(tags=["Interest Types"])
 class InterestTypeViewSet(viewsets.ModelViewSet):
     queryset = InterestType.objects.all()
     serializer_class = InterestTypeSerializer
@@ -30,6 +34,8 @@ class InterestTypeViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
+
+@extend_schema(tags=["Total Liabilities"])
 class TotalLiabilitiesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

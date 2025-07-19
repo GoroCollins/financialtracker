@@ -13,6 +13,7 @@ from dj_rest_auth.registration.views import VerifyEmailView
 from allauth.account.views import ConfirmEmailView
 
 
+
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
@@ -37,8 +38,11 @@ urlpatterns += [
     path("api/", include("config.api_router")),
     # DRF auth token
     path("api/auth-token/", obtain_auth_token),
+    # Schema Endpoint
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs",),
+    # Swagger UI
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs",), 
+    # DRF auth
     path('api-auth/', include('rest_framework.urls')),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),

@@ -1,11 +1,11 @@
 from rest_framework import viewsets, filters, status
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from . . models import LiquidAsset, Equity, InvestmentAccount, RetirementAccount
 from . serializers import LiquidAssetSerializer, EquitySerializer, InvestmentAccountSerializer, RetirementAccountSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum
-
 
 # Create your views here.
 class BaseAssetViewSet(viewsets.ModelViewSet):
@@ -25,26 +25,31 @@ class BaseAssetViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
 
+@extend_schema(tags=["Liquid Assets"])
 class LiquidAssetViewSet(BaseAssetViewSet):
     queryset = LiquidAsset.objects.all()
     serializer_class = LiquidAssetSerializer
     search_fields = ["source", "currency__code"]
 
+@extend_schema(tags=["Equities"])
 class EquityViewSet(BaseAssetViewSet):
     queryset = Equity.objects.all()
     serializer_class = EquitySerializer
     search_fields = ["name", "ratio", "currency__code"]
 
+@extend_schema(tags=["Investment Accounts"])
 class InvestmentAccountViewSet(BaseAssetViewSet):
     queryset = InvestmentAccount.objects.all()
     serializer_class = InvestmentAccountSerializer
     search_fields = ["name", "currency__code"]
 
+@extend_schema(tags=["Retirement Accounts"])
 class RetirementAccountViewSet(BaseAssetViewSet):
     queryset = RetirementAccount.objects.all()
     serializer_class = RetirementAccountSerializer
     search_fields = ["name", "employer", "currency__code"]
 
+@extend_schema(tags=["Total Assets"])
 class TotalAssetsAPIView(APIView):
     """API endpoint to get the total expenses across all categories."""
     permission_classes = [IsAuthenticated]

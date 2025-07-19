@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters, status
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.db.models import Sum
 from rest_framework.response import Response
@@ -36,18 +37,22 @@ class BaseExpenseViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Authentication required to modify this record.")
         serializer.save(modified_by=user)
 
+@extend_schema(tags=["Fixed Expenses"])
 class FixedExpenseViewSet(BaseExpenseViewSet):
     queryset = FixedExpense.objects.all()
     serializer_class = FixedExpenseSerializer
 
+@extend_schema(tags=["Variable Expenses"])
 class VariableExpenseViewSet(BaseExpenseViewSet):
     queryset = VariableExpense.objects.all()
     serializer_class = VariableExpenseSerializer
 
+@extend_schema(tags=["Discretionary Expenses"])
 class DiscretionaryExpenseViewSet(BaseExpenseViewSet):
     queryset = DiscretionaryExpense.objects.all()
     serializer_class = DiscretionaryExpenseSerializer
 
+@extend_schema(tags=["Total Expenses"])
 class TotalExpensesAPIView(APIView):
     """API endpoint to get the total expenses across all categories."""
     permission_classes = [IsAuthenticated]

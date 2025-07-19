@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters, status
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from ..models import EarnedIncome, PortfolioIncome, PassiveIncome
 from . serializers import EarnedIncomeSerializer, PortfolioIncomeSerializer, PassiveIncomeSerializer
@@ -26,20 +27,23 @@ class BaseIncomeViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
 
-# Inherited ViewSets
+@extend_schema(tags=["Earned Income"])
 class EarnedIncomeViewSet(BaseIncomeViewSet):
     queryset = EarnedIncome.objects.all()
     serializer_class = EarnedIncomeSerializer
 
+@extend_schema(tags=["Portfolio Income"])
 class PortfolioIncomeViewSet(BaseIncomeViewSet):
     queryset = PortfolioIncome.objects.all()
     serializer_class = PortfolioIncomeSerializer
 
+@extend_schema(tags=["Passive Income"])
 class PassiveIncomeViewSet(BaseIncomeViewSet):
     queryset = PassiveIncome.objects.all()
     serializer_class = PassiveIncomeSerializer
     
 # Total Income API View
+@extend_schema(tags=["Total Income"])
 class TotalIncomeAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):

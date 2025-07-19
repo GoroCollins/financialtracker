@@ -1,5 +1,6 @@
 from ..models import Currency, ExchangeRate
 from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema
 from .serializers import CurrencySerializer, ExchangeRateSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,10 +15,11 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError as DjangoValidationError
 from django.db.models import ProtectedError
 
+
 logger = logging.getLogger(__name__)
 # Create your views here.
 
-
+@extend_schema(tags=["Currencies"])
 class CurrencyViewSet(viewsets.ModelViewSet):
     serializer_class = CurrencySerializer
     permission_classes = [IsAuthenticated]
@@ -62,7 +64,7 @@ class CurrencyViewSet(viewsets.ModelViewSet):
             return Response({"detail": "This currency is already in use and cannot be deleted."}, status=status.HTTP_400_BAD_REQUEST, )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
+@extend_schema(tags=["Exchange Rates"])
 class ExchangeRateViewSet(viewsets.ModelViewSet):
     serializer_class = ExchangeRateSerializer
     permission_classes = [IsAuthenticated]
@@ -116,6 +118,7 @@ class ExchangeRateViewSet(viewsets.ModelViewSet):
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@extend_schema(tags=["Local Currency"])
 class GetLocalCurrencyAPIView(APIView):
     """API to fetch the local currency code."""
     permission_classes = [IsAuthenticated]
