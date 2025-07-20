@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import CharField, ImageField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class User(AbstractUser):
@@ -16,6 +17,7 @@ class User(AbstractUser):
     middle_name = CharField(_("Middle Name"), blank=True, max_length=255)
     last_name = CharField(_("Last Name"), blank=True, max_length=255)  # type: ignore[assignment]
     profile_image = ImageField(upload_to='uploads/images', null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True, help_text="User's Phone Number")
     
     @property
     def full_name(self):
