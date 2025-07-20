@@ -25,10 +25,10 @@ class CurrencyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_local']
-
+    
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Currency.objects.filter(created_by=self.request.user)
+            return Currency.objects.filter(created_by=self.request.user).select_related('created_by', 'modified_by')
         return Currency.objects.none()
 
     def get_serializer_context(self):
