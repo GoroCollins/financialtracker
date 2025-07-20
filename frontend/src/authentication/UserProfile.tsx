@@ -8,6 +8,7 @@ import placeholderProfileImage from '../assets/placeholder.png';
 import { toast } from 'react-hot-toast';
 import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
 import { useNavigate } from "react-router-dom";
+import { set } from 'date-fns';
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
@@ -25,6 +26,7 @@ const UserProfile: React.FC = () => {
       setValue('first_name', user.first_name);
       setValue('middle_name', user.middle_name || ''); 
       setValue('last_name', user.last_name);
+      setValue('phone_number', user.phone_number || '');
       setPreviewImage(user.profile_image || null);
     }
   }, [user, setValue]);
@@ -35,6 +37,7 @@ const UserProfile: React.FC = () => {
     formData.append('first_name', data.first_name);
     formData.append('middle_name', data.middle_name || ''); 
     formData.append('last_name', data.last_name);
+    formData.append('phone_number', data.phone_number || '');
 
     if (data.profile_image?.[0]) {
       formData.append('profile_image', data.profile_image[0]);
@@ -96,6 +99,12 @@ const UserProfile: React.FC = () => {
           <Form.Label>Last Name</Form.Label>
           <Form.Control type="text" {...register('last_name')} />
           {errors.last_name && <p className="text-danger">{errors.last_name.message}</p>}
+
+        </Form.Group>
+                <Form.Group controlId="phone_number">
+          <Form.Label>Phone Number</Form.Label>
+          <Form.Control type="text" {...register('phone_number')} />
+          {errors.phone_number && <p className="text-danger">{errors.phone_number.message}</p>}
         </Form.Group>
 
         <div>
