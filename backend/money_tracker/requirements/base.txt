@@ -33,3 +33,5 @@ django-filter==24.3 # https://github.com/carltongibson/django-filter
 sentry-sdk[django]
 # grafanalib 
 # python-json-logger
+django-phonenumber-field==8.1.0
+phonenumberslite==9.0.9
