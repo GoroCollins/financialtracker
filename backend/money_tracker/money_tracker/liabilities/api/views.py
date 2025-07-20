@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
 @extend_schema(tags=["Loans"])
 class LoanViewSet(viewsets.ModelViewSet):
-    queryset = Loan.objects.all()
+    queryset = Loan.objects.all().select_related("currency", "created_by", "modified_by", "interest_type")
     serializer_class = LoanSerializer
     
     def get_queryset(self):
@@ -24,7 +24,7 @@ class LoanViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=["Interest Types"])
 class InterestTypeViewSet(viewsets.ModelViewSet):
-    queryset = InterestType.objects.all()
+    queryset = InterestType.objects.all().select_related("created_by", "modified_by")
     serializer_class = InterestTypeSerializer
     def get_queryset(self):
         if self.request.user.is_authenticated:

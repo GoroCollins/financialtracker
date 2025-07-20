@@ -29,17 +29,17 @@ class BaseIncomeViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=["Earned Income"])
 class EarnedIncomeViewSet(BaseIncomeViewSet):
-    queryset = EarnedIncome.objects.all()
+    queryset = EarnedIncome.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = EarnedIncomeSerializer
 
 @extend_schema(tags=["Portfolio Income"])
 class PortfolioIncomeViewSet(BaseIncomeViewSet):
-    queryset = PortfolioIncome.objects.all()
+    queryset = PortfolioIncome.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = PortfolioIncomeSerializer
 
 @extend_schema(tags=["Passive Income"])
 class PassiveIncomeViewSet(BaseIncomeViewSet):
-    queryset = PassiveIncome.objects.all()
+    queryset = PassiveIncome.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = PassiveIncomeSerializer
     
 # Total Income API View

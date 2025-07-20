@@ -39,17 +39,17 @@ class BaseExpenseViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=["Fixed Expenses"])
 class FixedExpenseViewSet(BaseExpenseViewSet):
-    queryset = FixedExpense.objects.all()
+    queryset = FixedExpense.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = FixedExpenseSerializer
 
 @extend_schema(tags=["Variable Expenses"])
 class VariableExpenseViewSet(BaseExpenseViewSet):
-    queryset = VariableExpense.objects.all()
+    queryset = VariableExpense.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = VariableExpenseSerializer
 
 @extend_schema(tags=["Discretionary Expenses"])
 class DiscretionaryExpenseViewSet(BaseExpenseViewSet):
-    queryset = DiscretionaryExpense.objects.all()
+    queryset = DiscretionaryExpense.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = DiscretionaryExpenseSerializer
 
 @extend_schema(tags=["Total Expenses"])

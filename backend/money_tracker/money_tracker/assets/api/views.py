@@ -27,25 +27,25 @@ class BaseAssetViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=["Liquid Assets"],)
 class LiquidAssetViewSet(BaseAssetViewSet):
-    queryset = LiquidAsset.objects.all()
+    queryset = LiquidAsset.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = LiquidAssetSerializer
     search_fields = ["source", "currency__code"]
 
 @extend_schema(tags=["Equities"])
 class EquityViewSet(BaseAssetViewSet):
-    queryset = Equity.objects.all()
+    queryset = Equity.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = EquitySerializer
     search_fields = ["name", "ratio", "currency__code"]
 
 @extend_schema(tags=["Investment Accounts"])
 class InvestmentAccountViewSet(BaseAssetViewSet):
-    queryset = InvestmentAccount.objects.all()
+    queryset = InvestmentAccount.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = InvestmentAccountSerializer
     search_fields = ["name", "currency__code"]
 
 @extend_schema(tags=["Retirement Accounts"])
 class RetirementAccountViewSet(BaseAssetViewSet):
-    queryset = RetirementAccount.objects.all()
+    queryset = RetirementAccount.objects.all().select_related("currency", "created_by", "modified_by")
     serializer_class = RetirementAccountSerializer
     search_fields = ["name", "employer", "currency__code"]
 
