@@ -365,16 +365,10 @@ CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 # https://docs.allauth.org/en/latest/account/configuration.html
 # ACCOUNT_AUTHENTICATION_METHOD = "username"
-ACCOUNT_LOGIN_METHODS = {'username'}
+# ACCOUNT_LOGIN_METHODS = {'username'}
 # https://docs.allauth.org/en/latest/account/configuration.html
 # ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-# ACCOUNT_SIGNUP_FIELDS = {
-#     'username': {'required': True},
-#     'email': {'required': True},
-#     'password1': {'required': True},
-#     'password2': {'required': True},
-# }
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://docs.allauth.org/en/latest/account/configuration.html
@@ -449,6 +443,7 @@ REST_AUTH = {
     'JWT_AUTH_HTTPONLY': False,
     'TOKEN_SERIALIZER': 'money_tracker.users.api.serializers.CustomTokenSerializer',
     'USER_DETAILS_SERIALIZER': 'money_tracker.users.api.serializers.CustomUserDetailsSerializer',
+    'REGISTER_SERIALIZER': 'money_tracker.users.api.serializers.CustomRegisterSerializer',
 }
 
 SIMPLE_JWT = {
