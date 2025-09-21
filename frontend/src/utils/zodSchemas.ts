@@ -1,5 +1,20 @@
 import { z } from 'zod';
 import { AssetTypeKey } from '../constants/assetsTypes';
+import { parsePhoneNumberFromString } from "libphonenumber-js";
+
+const kenyanPhoneNumberSchema = z
+  .string()
+  .min(10, "Phone number is too short")
+  .refine((val) => {
+    const phone = parsePhoneNumberFromString(val, "KE");
+    return phone?.isValid();
+  }, {
+    message: "Invalid Kenyan phone number",
+  })
+  .transform((val) => {
+    const phone = parsePhoneNumberFromString(val, "KE");
+    return phone ? phone.number : val; // returns E.164 format, e.g. +254723456891
+  });
 
 export const CurrencySchema = z.object({
   code: z.string().min(1, 'Currency code is required'),
@@ -41,6 +56,7 @@ export const userProfileSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   middle_name: z.string().optional(),
   last_name: z.string().min(1, 'Last name is required'),
+  phone_number: kenyanPhoneNumberSchema.optional(),
   profile_image: z.any().optional(),
 });
 
