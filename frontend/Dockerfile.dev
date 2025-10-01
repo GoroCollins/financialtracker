@@ -1,18 +1,20 @@
-# Use Node.js for development
+# Use official Node.js slim image
 FROM node:23-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY package.json package-lock.json ./
-RUN npm install
+# Enable corepack (comes bundled with Node 16.9+)
+RUN corepack enable
 
-# Copy all files
+# Copy package.json and lockfile first (for better layer caching)
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies (pnpm version is read from package.json -> packageManager field)
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the source code
 COPY . .
 
-# Expose Vite's default dev port
-EXPOSE 5173
-
-# Start Vite in dev mode
-CMD ["npm", "run", "dev", "--", "--host"]
+# Start Vite in dev mode (accessible from Docker host)
+CMD ["pnpm", "dev", "--host"]

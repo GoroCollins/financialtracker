@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Button, Form, InputGroup } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthService } from "./AuthenticationService";
 import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 interface LoginFormInputs {
   username: string;
@@ -15,28 +17,22 @@ const Login: React.FC = () => {
   const { state } = useLocation();
   const { login } = useAuthService();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setError,
-  } = useForm<LoginFormInputs>({
+  const [showPassword, setShowPassword] = useState(false);
+
+  const form = useForm<LoginFormInputs>({
     defaultValues: {
       username: "",
       password: "",
     },
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
       await login(data.username, data.password);
       navigate(state?.from?.pathname || "/home");
-      reset();
+      form.reset();
     } catch (error: any) {
-      setError("password", {
+      form.setError("password", {
         type: "manual",
         message: "Invalid username or password.",
       });
@@ -44,51 +40,67 @@ const Login: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group className="mb-3" controlId="username">
-        <Form.Label>Username</Form.Label>
-        <Form.Control
-          type="text"
-          {...register("username", { required: "This is required" })}
-          placeholder="username"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Username field */}
+        <FormField
+          control={form.control}
+          name="username"
+          rules={{ required: "This is required" }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input placeholder="username" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.username && (
-          <p className="text-danger">{errors.username.message}</p>
-        )}
-      </Form.Group>
 
-      <Form.Group className="mb-3" controlId="password">
-        <Form.Label>Password</Form.Label>
-        <InputGroup>
-          <Form.Control
-            type={showPassword ? "text" : "password"}
-            {...register("password", { required: "This is required" })}
-            placeholder="password"
-          />
+        {/* Password field with toggle */}
+        <FormField
+          control={form.control}
+          name="password"
+          rules={{ required: "This is required" }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="password"
+                    {...field}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Action buttons */}
+        <div className="flex space-x-4">
+          <Button type="submit">Login</Button>
           <Button
-            variant="outline-secondary"
-            onClick={() => setShowPassword((prev) => !prev)}
             type="button"
+            variant="secondary"
+            onClick={() => navigate(-1)}
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            Back
           </Button>
-        </InputGroup>
-        {errors.password && (
-          <p className="text-danger mt-1">{errors.password.message}</p>
-        )}
-      </Form.Group>
-
-      <Button type="submit" variant="primary">
-        Login
-      </Button>
-      <Button
-        variant="secondary"
-        onClick={() => navigate(-1)}
-        style={{ marginLeft: "10px" }}
-      >
-        Back
-      </Button>
-    </form>
+        </div>
+      </form>
+    </Form>
   );
 };
 

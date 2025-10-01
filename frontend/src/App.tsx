@@ -1,21 +1,23 @@
-import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { AuthProvider } from './authentication/AuthenticationService'; // Make sure to import AuthProvider
-import { BrowserRouter as Router } from 'react-router-dom';
+import "./App.css";
+import { AuthProvider } from "./authentication/AuthenticationService";
+import { BrowserRouter as Router } from "react-router-dom";
 import RoutesConfig from "./RoutesConfig";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
-
   return (
-    <Router>
-      <AuthProvider>  {/* Wrap your entire app inside AuthProvider */}
-        <Toaster position="top-right" />
-        <RoutesConfig  />
-      </AuthProvider>
-    </Router>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Router>
+        <AuthProvider>{/* Wrap your entire app inside AuthProvider */}
+          <RoutesConfig />
+          <Toaster position="top-right" />
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 
 export default App;
+
 

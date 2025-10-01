@@ -5,7 +5,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { CurrencySchema, CurrencyFormData, ExchangeRate } from '../utils/zodSchemas';
 import { axiosInstance } from '../authentication/AuthenticationService';
 import { toast } from 'react-hot-toast';
-import { Button } from 'react-bootstrap';
+import { Button } from '@/components/ui/button';
 import ConfirmModal from '../ConfirmModal';
 import useSWR from 'swr';
 import { fetcher } from '../utils/swrFetcher';

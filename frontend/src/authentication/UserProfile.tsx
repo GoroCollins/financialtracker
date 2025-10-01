@@ -3,12 +3,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useSWR from 'swr';
 import { axiosInstance, useAuthService } from './AuthenticationService';
-import { Button, Form } from 'react-bootstrap';
 import placeholderProfileImage from '../assets/placeholder.png';
 import { toast } from 'react-hot-toast';
 import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
 import { useNavigate } from "react-router-dom";
-import { set } from 'date-fns';
+// import { set } from 'date-fns';
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
@@ -16,20 +18,23 @@ const UserProfile: React.FC = () => {
   const { refreshUser } = useAuthService();
   const { data: user, error, mutate } = useSWR('/dj-rest-auth/user/', fetcher);
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, setValue, } = useForm<UserProfileForm>({ resolver: zodResolver(userProfileSchema), });
+  // const { register, handleSubmit, formState: { errors }, setValue, } = useForm<UserProfileForm>({ resolver: zodResolver(userProfileSchema), });
+  const form = useForm<UserProfileForm>({
+    resolver: zodResolver(userProfileSchema),
+  });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      setValue('username', user.username);
-      setValue('email', user.email);
-      setValue('first_name', user.first_name);
-      setValue('middle_name', user.middle_name || ''); 
-      setValue('last_name', user.last_name);
-      setValue('phone_number', user.phone_number || '');
+      form.setValue("username", user.username);
+      form.setValue("email", user.email);
+      form.setValue("first_name", user.first_name);
+      form.setValue("middle_name", user.middle_name || ""); 
+      form.setValue("last_name", user.last_name);
+      form.setValue("phone_number", user.phone_number || "");
       setPreviewImage(user.profile_image || null);
     }
-  }, [user, setValue]);
+  }, [user, form]);
 
   const onSubmit = async (data: UserProfileForm) => {
     const formData = new FormData();
@@ -71,75 +76,135 @@ const UserProfile: React.FC = () => {
 
   return (
     <>
-      <h1>Manage your profile</h1>
-      <Form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
-        <Form.Group controlId="username">
-          <Form.Label>Username</Form.Label>
-          <Form.Control type="text" readOnly {...register('username')} />
-        </Form.Group>
-
-        <Form.Group controlId="email">
-          <Form.Label>Email</Form.Label>
-          <Form.Control type="email" {...register('email')} />
-          {errors.email && <p className="text-danger">{errors.email.message}</p>}
-        </Form.Group>
-
-        <Form.Group controlId="first_name">
-          <Form.Label>First Name</Form.Label>
-          <Form.Control type="text" {...register('first_name')} />
-          {errors.first_name && <p className="text-danger">{errors.first_name.message}</p>}
-        </Form.Group>
-
-        <Form.Group controlId="middle_name">
-          <Form.Label>Middle Name (Optional)</Form.Label>
-          <Form.Control type="text" {...register('middle_name')} />
-        </Form.Group>
-
-        <Form.Group controlId="last_name">
-          <Form.Label>Last Name</Form.Label>
-          <Form.Control type="text" {...register('last_name')} />
-          {errors.last_name && <p className="text-danger">{errors.last_name.message}</p>}
-
-        </Form.Group>
-                <Form.Group controlId="phone_number">
-          <Form.Label>Phone Number</Form.Label>
-          <Form.Control type="text" {...register('phone_number')} />
-          {errors.phone_number && <p className="text-danger">{errors.phone_number.message}</p>}
-        </Form.Group>
-
-        <div>
-          <Form.Label>Profile Image</Form.Label>
-          {previewImage ? (
-            <img
-              src={previewImage}
-              alt="Profile"
-              style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-            />
-          ) : (
-            <div>
-              <p>No profile image available</p>
-              <img
-                src={placeholderProfileImage}
-                alt="Placeholder"
-                style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-              />
-            </div>
-          )}
-        </div>
-
-        <Form.Group controlId="profile_image">
-          <Form.Label>Change Profile Image</Form.Label>
-          <Form.Control
-            type="file"
-            accept="image/*"
-            {...register('profile_image')}
-            onChange={handleImageChange}
+      <h1 className="text-2xl font-semibold mb-6">Manage your profile</h1>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} encType="multipart/form-data" className="space-y-6">
+        {/* Username (read-only) */}
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input {...field} readOnly />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </Form.Group>
-
-        <Button type="submit" className="mt-3">
-          Update Profile
-        </Button>
+        {/* Email */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* First Name */}
+          <FormField
+            control={form.control}
+            name="first_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Middle Name */}
+          <FormField
+            control={form.control}
+            name="middle_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Middle Name (Optional)</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          {/* Last Name */}
+          <FormField
+            control={form.control}
+            name="last_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Phone Number */}
+          <FormField
+            control={form.control}
+            name="phone_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Profile Image Preview */}
+          <div>
+            <FormLabel>Profile Image</FormLabel>
+            {previewImage ? (
+              <img
+                src={previewImage}
+                alt="Profile"
+                className="w-[150px] h-[150px] object-cover rounded-md"
+              />
+            ) : (
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  No profile image available
+                </p>
+                <img
+                  src={placeholderProfileImage}
+                  alt="Placeholder"
+                  className="w-[150px] h-[150px] object-cover rounded-md"
+                />
+              </div>
+            )}
+          </div>
+          {/* Upload New Image */}
+          <FormField
+            control={form.control}
+            name="profile_image"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Change Profile Image</FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      field.onChange(e.target.files);
+                      handleImageChange(e);
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        <Button type="submit">Update Profile</Button>
+        </form>
       </Form>
     </>
   );
