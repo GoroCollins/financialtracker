@@ -30,6 +30,8 @@ import EditInterestType from "./pages/liabilities/interesttypes/EditInterestType
 import LoansPage from "./pages/liabilities/loans/LoansPage";
 import LoanDetails from "./pages/liabilities/loans/LoanDetails";
 import EditLoan from "./pages/liabilities/loans/EditLoan";
+import ForgotPasswordForm from "./authentication/ForgotPassword";
+import ResetPasswordForm from "./authentication/ResetPassword";
 const RoutesConfig: React.FC = () => {
   return (
     <Routes>
@@ -38,6 +40,8 @@ const RoutesConfig: React.FC = () => {
       <Route path="/verify-email" element={<VerifyEmailNotice />} />
       <Route path="/confirm-email/:key" element={<ConfirmEmail />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgotpassword" element={<ForgotPasswordForm />} />
+      <Route path="/resetpassword/:uid/:token" element={<ResetPasswordForm />} />
       <Route path="/logout" element={<ProtectedRoute><Logout /></ProtectedRoute>} />
       {/* Protected Routes under AppLayout */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
