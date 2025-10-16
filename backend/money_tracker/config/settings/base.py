@@ -444,6 +444,7 @@ REST_AUTH = {
     'TOKEN_SERIALIZER': 'money_tracker.users.api.serializers.CustomTokenSerializer',
     'USER_DETAILS_SERIALIZER': 'money_tracker.users.api.serializers.CustomUserDetailsSerializer',
     'REGISTER_SERIALIZER': 'money_tracker.users.api.serializers.CustomRegisterSerializer',
+    'PASSWORD_RESET_SERIALIZER':'money_tracker.users.api.serializers.CustomPasswordResetSerializer',
 }
 
 SIMPLE_JWT = {
@@ -454,3 +455,5 @@ SIMPLE_JWT = {
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 ACCOUNT_ADAPTER = 'money_tracker.users.adapters.CustomAccountAdapter'
+
+PASSWORD_RESET_TIMEOUT = 600
