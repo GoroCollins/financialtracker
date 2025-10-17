@@ -18,6 +18,7 @@ const UserProfile: React.FC = () => {
   const { refreshUser } = useAuthService();
   const { data: user, error, mutate } = useSWR('/dj-rest-auth/user/', fetcher);
   const navigate = useNavigate();
+  const handlePasswordChange = () => navigate("/changepassword")
   // const { register, handleSubmit, formState: { errors }, setValue, } = useForm<UserProfileForm>({ resolver: zodResolver(userProfileSchema), });
   const form = useForm<UserProfileForm>({
     resolver: zodResolver(userProfileSchema),
@@ -204,6 +205,14 @@ const UserProfile: React.FC = () => {
             )}
           />
         <Button type="submit">Update Profile</Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePasswordChange}
+          className="ml-4"
+        >
+          Change Password
+        </Button>
         </form>
       </Form>
     </>
