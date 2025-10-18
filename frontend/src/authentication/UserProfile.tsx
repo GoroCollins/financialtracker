@@ -7,22 +7,19 @@ import placeholderProfileImage from '../assets/placeholder.png';
 import { toast } from 'react-hot-toast';
 import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
 import { useNavigate } from "react-router-dom";
-// import { set } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
 const UserProfile: React.FC = () => {
   const { refreshUser } = useAuthService();
-  const { data: user, error, mutate } = useSWR('/dj-rest-auth/user/', fetcher);
+  const { data: user, error, mutate } = useSWR("/dj-rest-auth/user/", fetcher);
   const navigate = useNavigate();
-  const handlePasswordChange = () => navigate("/changepassword")
-  // const { register, handleSubmit, formState: { errors }, setValue, } = useForm<UserProfileForm>({ resolver: zodResolver(userProfileSchema), });
   const form = useForm<UserProfileForm>({
     resolver: zodResolver(userProfileSchema),
   });
+
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,7 +27,7 @@ const UserProfile: React.FC = () => {
       form.setValue("username", user.username);
       form.setValue("email", user.email);
       form.setValue("first_name", user.first_name);
-      form.setValue("middle_name", user.middle_name || ""); 
+      form.setValue("middle_name", user.middle_name || "");
       form.setValue("last_name", user.last_name);
       form.setValue("phone_number", user.phone_number || "");
       setPreviewImage(user.profile_image || null);
@@ -39,48 +36,49 @@ const UserProfile: React.FC = () => {
 
   const onSubmit = async (data: UserProfileForm) => {
     const formData = new FormData();
-    formData.append('email', data.email);
-    formData.append('first_name', data.first_name);
-    formData.append('middle_name', data.middle_name || ''); 
-    formData.append('last_name', data.last_name);
-    formData.append('phone_number', data.phone_number || '');
+    formData.append("email", data.email);
+    formData.append("first_name", data.first_name);
+    formData.append("middle_name", data.middle_name || "");
+    formData.append("last_name", data.last_name);
+    formData.append("phone_number", data.phone_number || "");
 
     if (data.profile_image?.[0]) {
-      formData.append('profile_image', data.profile_image[0]);
+      formData.append("profile_image", data.profile_image[0]);
     }
 
     try {
-      await axiosInstance.patch('/dj-rest-auth/user/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await axiosInstance.patch("/dj-rest-auth/user/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success('Profile updated successfully');
+      toast.success("Profile updated successfully");
       await mutate();
       await refreshUser();
-      navigate('/home');
+      navigate("/home");
     } catch (err) {
       console.error("Error updating profile:", err);
-      toast.error('Failed to update profile');
+      toast.error("Failed to update profile");
     }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setPreviewImage(URL.createObjectURL(file));
-    }
+    if (file) setPreviewImage(URL.createObjectURL(file));
   };
 
   if (error) return <p>Error loading user profile</p>;
   if (!user) return <p>Loading...</p>;
 
   return (
-    <>
-      <h1 className="text-2xl font-semibold mb-6">Manage your profile</h1>
+    <div className="container mx-auto max-w-2xl py-8">
+      <h1 className="text-2xl font-semibold mb-6">Manage Your Profile</h1>
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} encType="multipart/form-data" className="space-y-6">
-        {/* Username (read-only) */}
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          encType="multipart/form-data"
+          className="space-y-6"
+        >
+          {/* Username (read-only) */}
           <FormField
             control={form.control}
             name="username"
@@ -93,7 +91,8 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
-        {/* Email */}
+
+          {/* Email */}
           <FormField
             control={form.control}
             name="email"
@@ -107,6 +106,7 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
+
           {/* First Name */}
           <FormField
             control={form.control}
@@ -121,6 +121,7 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
+
           {/* Middle Name */}
           <FormField
             control={form.control}
@@ -134,6 +135,7 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
+
           {/* Last Name */}
           <FormField
             control={form.control}
@@ -148,6 +150,7 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
+
           {/* Phone Number */}
           <FormField
             control={form.control}
@@ -162,28 +165,27 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
+
           {/* Profile Image Preview */}
           <div>
             <FormLabel>Profile Image</FormLabel>
-            {previewImage ? (
-              <img
-                src={previewImage}
-                alt="Profile"
-                className="w-[150px] h-[150px] object-cover rounded-md"
-              />
-            ) : (
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  No profile image available
-                </p>
+            <div className="mt-2">
+              {previewImage ? (
+                <img
+                  src={previewImage}
+                  alt="Profile"
+                  className="w-[150px] h-[150px] object-cover rounded-md"
+                />
+              ) : (
                 <img
                   src={placeholderProfileImage}
                   alt="Placeholder"
                   className="w-[150px] h-[150px] object-cover rounded-md"
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
           {/* Upload New Image */}
           <FormField
             control={form.control}
@@ -204,18 +206,20 @@ const UserProfile: React.FC = () => {
               </FormItem>
             )}
           />
-        <Button type="submit">Update Profile</Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handlePasswordChange}
-          className="ml-4"
-        >
-          Change Password
-        </Button>
+
+          <div className="flex items-center gap-4 pt-4">
+            <Button type="submit">Update Profile</Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/changepassword")}
+            >
+              Change Password
+            </Button>
+          </div>
         </form>
       </Form>
-    </>
+    </div>
   );
 };
 
