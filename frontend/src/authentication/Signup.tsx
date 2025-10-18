@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
 import { axiosInstance } from "./AuthenticationService";
@@ -41,8 +41,16 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string }>({
+      score: 0,
+      label: "Weak",
+  });
+  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
 
   const password = watch("password1");
+  useEffect(() => {
+  handlePasswordChange(password || "");
+}, [password]);
   const confirmPassword = watch("password2");
 
   const { trigger, isMutating } = useSWRMutation("/dj-rest-auth/registration/", signupRequest);
@@ -58,6 +66,13 @@ const Signup = () => {
     setCopied(true);
     toast.success("Password copied to clipboard"); // ✅ feedback on copy
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handlePasswordChange = (value: string) => {
+      const strength = estimatePasswordStrength(value);
+      const suggestions = getPasswordSuggestions(value);
+      setPasswordStrength(strength);
+      setPasswordSuggestions(suggestions);
   };
 
   const onSubmit = async (formData: SignupFormData) => {
@@ -108,6 +123,10 @@ const Signup = () => {
               required: "Password is required",
               minLength: { value: 6, message: "Password must be at least 6 characters" }
             })}
+            onChange={(e) => {
+              setValue("password1", e.target.value);
+              handlePasswordChange(e.target.value);
+            }}
             className="w-full p-2 border rounded"
           />
           {errors.password1 && <p className="text-red-500">{errors.password1.message}</p>}
@@ -129,18 +148,19 @@ const Signup = () => {
             </button>
           </div>
         )}
-
-        {password && (
-          <div className="text-sm mt-1">
-            <p className="font-medium">Strength: {estimatePasswordStrength(password)}</p>
-            {getPasswordSuggestions(password).length > 0 && (
-              <ul className="text-xs text-gray-600 list-disc pl-4">
-                {getPasswordSuggestions(password).map((suggestion, index) => (
-                  <li key={index}>{suggestion}</li>
-                ))}
-              </ul>
-            )}
-          </div>
+        {/* 🔹 Password Strength Bar */}
+        <div className="mt-2">
+          <p className="text-sm text-muted-foreground mt-1">
+              Strength: {passwordStrength.label}
+          </p>
+        </div>
+        {/* 🔹 Suggestions */}
+        {passwordSuggestions.length > 0 && (
+            <ul className="mt-2 text-xs text-muted-foreground list-disc pl-5">
+              {passwordSuggestions.map((suggestion, index) => (
+                <li key={index}>{suggestion}</li>
+              ))}
+            </ul>
         )}
 
         <div className="relative">
