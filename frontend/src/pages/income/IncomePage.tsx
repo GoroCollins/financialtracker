@@ -6,7 +6,7 @@ import { incomeTypeMap, IncomeTypeKey } from "../../constants/incomeTypes";
 import { IncomeFormValues, IncomeResponse } from "../../utils/zodSchemas";
 import IncomeForm from "../../income/IncomeForm";
 import IncomeList from "../../income/IncomeList";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Currency } from "../../utils/zodSchemas";
 import { useMemo, useState, useRef, useEffect } from "react";
 

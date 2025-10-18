@@ -7,7 +7,7 @@ import { AssetFormValues, Currency } from "../../utils/zodSchemas";
 import { useMemo, useState, useEffect } from "react";
 import AssetForm from "../../financial_assets/AssetForm";
 import AssetList, { AssetListItem} from "../../financial_assets/AssetList";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const AssetPage = () => {
   const { type } = useParams<{ type: AssetTypeKey }>();

@@ -6,7 +6,7 @@ import { IncomeResponse } from "../../utils/zodSchemas";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { useState } from "react";
 import ConfirmModal from "../../ConfirmModal";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const IncomeDetails = () => {
   const { type, id } = useParams<{ type: IncomeTypeKey; id: string }>();

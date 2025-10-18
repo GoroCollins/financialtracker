@@ -5,7 +5,7 @@ import { incomeTypeMap, IncomeTypeKey } from "../../constants/incomeTypes";
 import { IncomeFormValues, IncomeResponse, Currency } from "../../utils/zodSchemas";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import IncomeForm from "../../income/IncomeForm";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useMemo } from "react";
 
 const EditIncome = () => {

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import useSWR from 'swr';
 import { axiosInstance, useAuthService } from './AuthenticationService';
 import placeholderProfileImage from '../assets/placeholder.png';
-import { toast } from 'react-hot-toast';
+import { toast } from "sonner";
 import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";

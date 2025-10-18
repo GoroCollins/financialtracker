@@ -1,7 +1,7 @@
 import axios, {AxiosResponse, AxiosInstance} from "axios";
 import Cookies from 'js-cookie';
 import React, { createContext, useContext, useMemo, ReactNode, useState, useEffect } from "react";
-import { toast } from 'react-hot-toast';
+import { toast } from "sonner";
 import { extractErrorMessage } from '../utils/errorHandler';
 
 const API_URL = import.meta.env.VITE_API_URL;

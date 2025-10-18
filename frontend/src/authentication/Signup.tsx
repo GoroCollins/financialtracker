@@ -6,7 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
 import { Eye, EyeOff, Clipboard } from "lucide-react";
-import { toast } from "react-hot-toast"; // ✅ Import toast
+import { toast } from "sonner";
 
 interface SignupFormData {
   email: string;
@@ -83,7 +83,10 @@ const Signup = () => {
 
     try {
       await trigger(formData);
-      toast.success("Signup successful! Check your email.");
+      toast.success('Account created successfully!', {
+        description: 'You can now log in with your credentials.',
+        duration: 4000,
+      });
       navigate("/verify-email");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "An unknown error occurred.");

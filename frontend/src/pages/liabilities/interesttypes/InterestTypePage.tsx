@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import useSWR from "swr";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
 import { fetcher } from "../../../utils/swrFetcher";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import InterestTypeForm, { InterestTypeFormHandle } from "../../../liabilities/interesttypes/InterestTypeForm";
 import InterestTypeList from "../../../liabilities/interesttypes/InterestTypeList";
 import { InterestTypeResponse, InterestTypeFormValues } from "../../../utils/zodSchemas";

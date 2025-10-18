@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../../utils/swrFetcher";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
 import { InterestTypeFormValues, InterestTypeResponse } from "../../../utils/zodSchemas";
 import InterestTypeForm from "../../../liabilities/interesttypes/InterestTypeForm";

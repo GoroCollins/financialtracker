@@ -6,7 +6,7 @@ import { ExpensesResponse } from "../../utils/zodSchemas";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { useState } from "react";
 import ConfirmModal from "../../ConfirmModal";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const ExpensesDetails = () => {
   const { type, id } = useParams<{ type: ExpenseTypeKey; id: string }>();

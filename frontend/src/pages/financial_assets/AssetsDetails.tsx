@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import ConfirmModal from "../../ConfirmModal";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";

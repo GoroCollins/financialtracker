@@ -5,7 +5,7 @@ import { LoanItem } from "../../../utils/zodSchemas";
 import { useState } from "react";
 import ConfirmModal from "../../../ConfirmModal";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const LoanDetails = () => {
   const { id } = useParams();

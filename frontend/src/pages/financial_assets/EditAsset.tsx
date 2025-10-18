@@ -4,7 +4,7 @@ import { fetcher } from "../../utils/swrFetcher";
 import { AssetFormValues } from "../../utils/zodSchemas";
 import { Currency } from "../../utils/zodSchemas";
 import AssetForm from "../../financial_assets/AssetForm";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
 import { useMemo } from "react";

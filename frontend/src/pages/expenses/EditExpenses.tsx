@@ -5,7 +5,7 @@ import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
 import { ExpensesFormValues, ExpensesResponse, Currency } from "../../utils/zodSchemas";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import ExpensesForm from "../../expenses/ExpensesForm";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useMemo } from "react";
 
 const EditExpenses = () => {

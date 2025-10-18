@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthService } from './AuthenticationService';
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const Logout: React.FC = () => {
   const { logout } = useAuthService();

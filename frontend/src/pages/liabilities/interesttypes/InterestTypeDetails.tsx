@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../../utils/swrFetcher";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useState } from "react";
 import ConfirmModal from "../../../ConfirmModal";
 

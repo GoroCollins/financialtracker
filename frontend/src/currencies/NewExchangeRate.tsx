@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ExchangeRateSchema, ExchangeRateFormData } from '../utils/zodSchemas';
 import { axiosInstance } from '../authentication/AuthenticationService';
 import { useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from "sonner";
 
 export default function CreateExchangeRate() {
   const { code } = useParams<{ code: string }>();

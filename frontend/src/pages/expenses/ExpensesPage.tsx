@@ -6,7 +6,7 @@ import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
 import { ExpensesFormValues, ExpensesResponse, Currency } from "../../utils/zodSchemas";
 import ExpensesForm from "../../expenses/ExpensesForm";
 import ExpensesList from "../../expenses/ExpensesList";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { useMemo, useState, useRef, useEffect } from "react";
 
 const ExpensesPage = () => {

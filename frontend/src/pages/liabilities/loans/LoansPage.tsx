@@ -5,7 +5,7 @@ import { LoanItem, LoanFormValues } from "../../../utils/zodSchemas";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
 import LoanForm, { LoanFormHandle } from "../../../liabilities/loans/LoanForm";
 import LoanList from "../../../liabilities/loans/LoanList";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const LoanPage = () => {
   const [showForm, setShowForm] = useState(false);

@@ -5,7 +5,7 @@ import { fetcher } from "../../../utils/swrFetcher";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
 import LoanForm from "../../../liabilities/loans/LoanForm";
 import { LoanFormValues, LoanItem } from "../../../utils/zodSchemas";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 const EditLoan = () => {
   const { id } = useParams();
