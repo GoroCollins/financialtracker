@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +8,8 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/comp
 import {Field, FieldError, FieldGroup, FieldLabel, FieldDescription,} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { axiosInstance } from "./AuthenticationService";
+import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
+import { Progress } from "@/components/ui/progress";
 
 // ✅ Define form validation schema
 const resetPasswordSchema = z
@@ -39,6 +41,19 @@ const ResetPasswordForm: React.FC = () => {
     },
   });
 
+  const [strength, setStrength] = useState(0);
+  const [strengthLabel, setStrengthLabel] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      form.setValue("new_password1", value);
+      const result = estimatePasswordStrength(value);
+      setStrength(result.score);
+      setStrengthLabel(result.label);
+      setSuggestions(getPasswordSuggestions(value));
+  };
+
   const onSubmit = async (data: ResetPasswordFormInputs) => {
     try {
       await axiosInstance.post("/dj-rest-auth/password/reset/confirm/", {
@@ -49,11 +64,16 @@ const ResetPasswordForm: React.FC = () => {
 
       alert("Password reset successful. You can now log in with your new password.");
       navigate("/login");
-      // navigate("/login", { state: { message: "Password reset successful. Please log in." } });
     } catch (error: any) {
       console.error("Password reset failed:", error.response?.data || error);
       alert("Password reset failed. Please try again or request a new reset link.");
     }
+  };
+
+ const getProgressColor = () => {
+    if (strength < 40) return "bg-red-500";
+    if (strength < 70) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   return (
@@ -73,6 +93,7 @@ const ResetPasswordForm: React.FC = () => {
                 type="password"
                 placeholder="Enter new password"
                 {...form.register("new_password1")}
+                onChange={handlePasswordChange}
               />
               {form.formState.errors.new_password1 && (
                 <FieldError
@@ -82,6 +103,25 @@ const ResetPasswordForm: React.FC = () => {
               <FieldDescription>
                 Password must have at least 8 characters, a number, and a mix of upper/lowercase letters.
               </FieldDescription>
+              {/* ✅ Password strength meter */}
+              {form.watch("new_password1") && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Strength: {strengthLabel}</span>
+                    <span>{strength}%</span>
+                  </div>
+                  <Progress value={strength} className={getProgressColor()} />
+                </div>
+              )}
+
+              {/* ✅ Password suggestions */}
+              {suggestions.length > 0 && (
+                <ul className="mt-2 text-xs text-muted-foreground list-disc list-inside">
+                  {suggestions.map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              )}
             </Field>
 
             <Field>
