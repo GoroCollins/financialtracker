@@ -46,8 +46,6 @@ urlpatterns += [
     path('api-auth/', include('rest_framework.urls')),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('dj-rest-auth/account-confirm-email/', VerifyEmailView.as_view(), name='account_email_verification_sent'),
-    path("account-confirm-email/<str:key>/", ConfirmEmailView.as_view(), name="account_confirm_email",),
 ]
 
 if settings.DEBUG:
