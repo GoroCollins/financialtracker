@@ -1,28 +1,41 @@
 import zxcvbn, { ZXCVBNResult } from 'zxcvbn';
 
+export interface PasswordStrength {
+  score: number;
+  label: string;
+}
+
 /**
  * Estimates the strength of the password based on zxcvbn score
  * @param password - The password to estimate strength for
  * @returns A string representing the password strength
  */
-export const estimatePasswordStrength = (password: string): string => {
+export const estimatePasswordStrength = (password: string): PasswordStrength => {
   const result: ZXCVBNResult = zxcvbn(password);
-  const score: number = result.score;
-  
-  switch (score) {
+  const score = result.score * 25; // zxcvbn score (0–4) → percentage (0–100)
+  let label = "";
+
+  switch (result.score) {
     case 0:
-      return 'Very Weak';
+      label = "Very Weak";
+      break;
     case 1:
-      return 'Weak';
+      label = "Weak";
+      break;
     case 2:
-      return 'Reasonable';
+      label = "Reasonable";
+      break;
     case 3:
-      return 'Strong';
+      label = "Strong";
+      break;
     case 4:
-      return 'Very Strong';
+      label = "Very Strong";
+      break;
     default:
-      return 'Unknown';
+      label = "Unknown";
   }
+
+  return { score, label };
 };
 
 /**
