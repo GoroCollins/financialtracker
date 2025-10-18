@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
@@ -12,16 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from '@/components/ui/progress';
 import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
 
-
 const ChangePassword: React.FC = () => {
   const navigate = useNavigate()
   const [showOld, setShowOld] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-
-  const [strength, setStrength] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [strengthValue, setStrengthValue] = useState(0);
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string }>({
+    score: 0,
+    label: "Weak",
+  });
+  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
 
   const form = useForm<FormInputs>({
     resolver: zodResolver(ChangePasswordSchema),
@@ -57,32 +57,18 @@ const ChangePassword: React.FC = () => {
     }
   }
 
-  // 🔍 Recalculate strength and suggestions on password change
-  useEffect(() => {
-    const password = form.watch('newPassword');
-    if (password) {
-      const score = estimatePasswordStrength(password);
-      const feedback = getPasswordSuggestions(password);
-      setStrength(score);
+    const handlePasswordChange = (value: string) => {
+    const strength = estimatePasswordStrength(value);
+    const suggestions = getPasswordSuggestions(value);
+    setPasswordStrength(strength);
+    setPasswordSuggestions(suggestions);
+  };
 
-      // map score to 0-100 for progress bar
-      const valueMap: Record<string, number> = {
-        'Very Weak': 10,
-        Weak: 30,
-        Reasonable: 55,
-        Strong: 80,
-        'Very Strong': 100,
-      };
-      setStrengthValue(valueMap[score] ?? 0);
-
-      setSuggestions(feedback);
-    } else {
-      setStrength('');
-      setStrengthValue(0);
-      setSuggestions([]);
-    }
-  }, [form.watch('newPassword')]);
-
+  const getProgressColor = () => {
+    if (passwordStrength.score <= 2) return "bg-red-500";
+    if (passwordStrength.score === 3) return "bg-yellow-500";
+    return "bg-green-500";
+  };
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-card border rounded-xl shadow-sm">
       <h2 className="text-2xl font-semibold mb-6 text-center">Change Password</h2>
@@ -127,6 +113,10 @@ const ChangePassword: React.FC = () => {
                       type={showNew ? 'text' : 'password'}
                       placeholder="Enter new password"
                       {...field}
+                       onChange={(e) => {
+                          form.setValue("newPassword", e.target.value);
+                          handlePasswordChange(e.target.value);
+                        }}
                     />
                   </FormControl>
                   <span
@@ -136,39 +126,29 @@ const ChangePassword: React.FC = () => {
                     {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
                   </span>
                 </div>
+              {/* 🔹 Password Strength Bar */}
+              <div className="mt-2">
+                <Progress
+                  value={(passwordStrength.score / 4) * 100}
+                  className={`h-2 ${getProgressColor()}`}
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Strength: {passwordStrength.label}
+                </p>
+              </div>
 
-                {/* Password strength bar */}
-                {strength && (
-                  <div className="mt-2">
-                    <Progress value={strengthValue} />
-                    <p
-                      className={`text-sm mt-1 ${
-                        strength === 'Very Weak'
-                          ? 'text-red-500'
-                          : strength === 'Weak'
-                          ? 'text-orange-500'
-                          : strength === 'Reasonable'
-                          ? 'text-yellow-500'
-                          : strength === 'Strong'
-                          ? 'text-green-500'
-                          : 'text-emerald-600'
-                      }`}
-                    >
-                      Strength: {strength}
-                    </p>
-                  </div>
-                )}
-
-                {/* Suggestions */}
-                {suggestions.length > 0 && (
-                  <FormDescription className="text-gray-400 mt-2 space-y-1">
-                    {suggestions.map((s, i) => (
-                      <p key={i}>• {s}</p>
-                    ))}
-                  </FormDescription>
-                )}
-
-                <FormMessage />
+              {/* 🔹 Suggestions */}
+              {passwordSuggestions.length > 0 && (
+                <ul className="mt-2 text-xs text-muted-foreground list-disc pl-5">
+                  {passwordSuggestions.map((suggestion, index) => (
+                    <li key={index}>{suggestion}</li>
+                  ))}
+                </ul>
+              )}
+              <FormMessage />
+              <FormDescription>
+                Password must have at least 8 characters, a number, and a mix of upper/lowercase letters.
+              </FormDescription>
               </FormItem>
             )}
           />
@@ -220,4 +200,3 @@ const ChangePassword: React.FC = () => {
 }
 
 export default ChangePassword;
-
