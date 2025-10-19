@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import PhoneInput from 'react-phone-number-input';
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
 const UserProfile: React.FC = () => {
@@ -159,7 +160,13 @@ const UserProfile: React.FC = () => {
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input type="text" {...field} />
+                  <PhoneInput
+                    defaultCountry="KE"
+                    value={field.value}
+                    onChange={(value) => field.onChange(value || "")}
+                    international
+                    countryCallingCodeEditable={false}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
