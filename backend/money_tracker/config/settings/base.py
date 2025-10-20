@@ -94,6 +94,7 @@ THIRD_PARTY_APPS = [
     "django_filters", # Added by Collins
     "dj_rest_auth", # Added by Collins
     "dj_rest_auth.registration", # Added by Collins
+    "rest_framework_simplejwt.token_blacklist", # Added by Collins
 ]
 
 LOCAL_APPS = [
@@ -450,6 +451,8 @@ REST_AUTH = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,  # Optional: Issue new refresh token on refresh
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
