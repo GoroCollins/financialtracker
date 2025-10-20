@@ -20,7 +20,7 @@ services:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
     ports:
-      - '8000:8000'
+      - '8080:8080'
     command: /start
 
   postgres:
@@ -104,5 +104,17 @@ services:
     volumes:
       - ../../frontend:/app
     ports:
-      - '5173:5173'
+      - '8075:8075'
 
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   ports:
+  #     - "83:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ../../nginx/ssl:/etc/nginx/certs
+  #     - ../../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - django
+  #     - react
