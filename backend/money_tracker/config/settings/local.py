@@ -14,13 +14,13 @@ SECRET_KEY = env(
     default="slmRoCNXcFXNAP9FY1Yf7tTNwo3Ecn6jr9xYUxLRGmKXWe3g2Na10HeyYWP3Osxz",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "financialtracker.skylim.local"]  # noqa: S104
 
 CORS_ALLOWED_ORIGINS = [
-   'http://localhost:5173', "http://127.0.0.1:5173",
+   'http://localhost:8075', "http://127.0.0.1:8075", "https://financialtracker.skylim.local"
 ]
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173', "http://127.0.0.1:5173"
+    'http://localhost:8075', "http://127.0.0.1:8075", "https://financialtracker.skylim.local"
 ]
 # CACHES
 # ------------------------------------------------------------------------------
@@ -81,4 +81,4 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # Your stuff...
 # ------------------------------------------------------------------------------
 
-FRONTEND_URL = "http://localhost:5173"
+FRONTEND_URL = "https://financialtracker.skylim.local"
