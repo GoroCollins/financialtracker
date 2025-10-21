@@ -39,24 +39,6 @@ class CustomTokenSerializer(TokenSerializer):
     class Meta:
         model = User
         fields = ('key', 'user')  # Include the user details in the login response
-        
-
-# class CustomRegisterSerializer(RegisterSerializer):
-#     phone_number = serializers.CharField(required=False)
-#     middle_name = serializers.CharField(required=False)
-#     _has_phone_field = True  # 🛠️ Important for compatibility with allauth
-
-#     def get_cleaned_data(self):
-#         data = super().get_cleaned_data()
-#         data['phone_number'] = self.validated_data.get('phone_number', '')
-#         data['middle_name'] = self.validated_data.get('middle_name', '')
-#         return data
-
-#     def custom_signup(self, request, user):
-#         user.phone_number = self.validated_data.get('phone_number', '')
-#         user.middle_name = self.validated_data.get('middle_name', '')
-#         user.save()
-#         return user
 
 
 from allauth.account import app_settings as allauth_settings
@@ -96,7 +78,7 @@ class CustomPasswordResetSerializer(serializers.Serializer):
     def save(self, **kwargs):
         request = self.context.get('request')
         email = self.validated_data['email']
-        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:8075")
         expiry_minutes = getattr(settings, "PASSWORD_RESET_TIMEOUT", 259200) // 60
 
         # Find all active users matching this email

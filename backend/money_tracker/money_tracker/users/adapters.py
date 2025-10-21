@@ -51,7 +51,7 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
 class CustomAccountAdapter(DefaultAccountAdapter):
     def send_confirmation_mail(self, request, emailconfirmation, signup):
         current_site = get_current_site(request)
-        frontend_base_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        frontend_base_url = getattr(settings, "FRONTEND_URL", "http://localhost:8075")
         activate_url = f"{frontend_base_url}/confirm-email/{emailconfirmation.key}"
         ctx = {
             "user": emailconfirmation.email_address.user,
