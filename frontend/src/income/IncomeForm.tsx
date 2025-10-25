@@ -1,7 +1,29 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IncomeFormValues, incomeSchema, Currency } from "../utils/zodSchemas";
+import {
+  IncomeFormValues,
+  incomeSchema,
+  Currency,
+} from "../utils/zodSchemas";
 import { useEffect, forwardRef, useImperativeHandle } from "react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface IncomeFormProps {
   initialValues?: IncomeFormValues;
@@ -16,18 +38,14 @@ export interface IncomeFormHandle {
 
 const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
   ({ initialValues, onSubmit, isEditing = false, currencies }, ref) => {
-    const {
-      register,
-      handleSubmit,
-      reset,
-      setError,
-      formState: { errors },
-    } = useForm<IncomeFormValues>({
+    const form = useForm<IncomeFormValues>({
       resolver: zodResolver(incomeSchema),
       defaultValues: initialValues
         ? { ...initialValues, amount: Number(initialValues.amount) }
         : undefined,
     });
+
+    const { reset, setError } = form;
 
     useEffect(() => {
       if (initialValues) {
@@ -53,48 +71,109 @@ const IncomeForm = forwardRef<IncomeFormHandle, IncomeFormProps>(
     };
 
     return (
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-w-md mb-6">
-        <select {...register("currency")} className="form-select">
-          <option value="">Select Currency</option>
-          {currencies
-            .filter((c) => c.is_local)
-            .map((currency) => (
-              <option key={currency.code} value={currency.code}>
-                {currency.code} - {currency.description}
-              </option>
-            ))}
-          {currencies.some((c) => !c.is_local) && <option disabled>──────────</option>}
-          {currencies
-            .filter((c) => !c.is_local)
-            .map((currency) => (
-              <option key={currency.code} value={currency.code}>
-                {currency.code} - {currency.description}
-              </option>
-            ))}
-        </select>
-        {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleFormSubmit)}
+          className="space-y-6 max-w-md mb-6"
+        >
+          {/* Currency */}
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Currency</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Currency" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {currencies
+                      .filter((c) => c.is_local)
+                      .map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} - {currency.description}
+                        </SelectItem>
+                      ))}
+                    {currencies.some((c) => !c.is_local) && (
+                      <div className="border-t my-1" />
+                    )}
+                    {currencies
+                      .filter((c) => !c.is_local)
+                      .map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} - {currency.description}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <input {...register("income_name")} placeholder="Income Name" className="form-control" />
-        {errors.income_name && <p className="text-red-500">{errors.income_name.message}</p>}
+          {/* Income Name */}
+          <FormField
+            control={form.control}
+            name="income_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Income Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Income Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <input
-          type="number"
-          step="0.01"
-          {...register("amount", { valueAsNumber: true })}
-          placeholder="Amount"
-          className="form-control"
-        />
-        {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
+          {/* Amount */}
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Amount"
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <textarea {...register("notes")} placeholder="Notes (optional)" className="form-control" />
-        {errors.notes && <p className="text-red-500">{errors.notes.message}</p>}
+          {/* Notes */}
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notes (optional)</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Notes" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-          {isEditing ? "Update" : "Create"}
-        </button>
-      </form>
+          <Button type="submit" className="w-full">
+            {isEditing ? "Update" : "Create"}
+          </Button>
+        </form>
+      </Form>
     );
   }
 );
 
+IncomeForm.displayName = "IncomeForm";
 export default IncomeForm;

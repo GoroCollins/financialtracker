@@ -3,12 +3,21 @@ import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { incomeTypeMap, IncomeTypeKey } from "../../constants/incomeTypes";
-import { IncomeFormValues, IncomeResponse } from "../../utils/zodSchemas";
+import { IncomeFormValues, IncomeResponse, Currency } from "../../utils/zodSchemas";
 import IncomeForm from "../../income/IncomeForm";
 import IncomeList from "../../income/IncomeList";
 import { toast } from "sonner";
-import { Currency } from "../../utils/zodSchemas";
 import { useMemo, useState, useRef, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 const IncomePage = () => {
   const { type } = useParams<{ type: IncomeTypeKey }>();
@@ -16,7 +25,22 @@ const IncomePage = () => {
   const formRef = useRef<{ reset: () => void }>(null);
 
   if (!type || !(type in incomeTypeMap)) {
-    return <div className="p-4 text-red-600">Invalid income type.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md border-destructive/40">
+          <CardHeader>
+            <CardTitle className="text-destructive">
+              Invalid income type
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Please verify the URL or choose a valid income type.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const { endpoint, label, route } = incomeTypeMap[type];
@@ -49,48 +73,63 @@ const IncomePage = () => {
       formRef.current?.reset();
     } catch (error: any) {
       if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Return field-level errors to the form
+        return error.response.data; // return validation errors to the form
       }
-      // If it's not a 400 validation error, fallback to global toast
       toast.error("Failed to create income.");
     }
   };
+
   useEffect(() => {
-    setShowForm(false);  // Close the form
-      }, [type]);
+    setShowForm(false); // close the form on type change
+  }, [type]);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">{label}</h1>
-
-      {!showForm && (
-        <button
-          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
-          onClick={() => setShowForm(true)}
-        >
-          + Create Income
-        </button>
-      )}
-
-      {showForm && (
-        <>
-          {currenciesLoading ? (
-            <p>Loading currencies...</p>
-          ) : (
-            <IncomeForm
-              onSubmit={handleCreate}
-              currencies={currencies}
-              ref={formRef}
-            />
+    <div className="container mx-auto max-w-4xl py-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl font-semibold">{label}</CardTitle>
+          {!showForm && (
+            <Button onClick={() => setShowForm(true)}>+ Create Income</Button>
           )}
-        </>
-      )}
+        </CardHeader>
 
-      {isLoading ? (
-        <p>Loading income...</p>
-      ) : (
-        <IncomeList incomes={incomes || []} basePath={route} />
-      )}
+        <Separator />
+
+        <CardContent className="space-y-6 pt-4">
+          {showForm && (
+            <div className="border rounded-md p-4 bg-muted/30">
+              {currenciesLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-1/3" />
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-6 w-1/4" />
+                </div>
+              ) : (
+                <IncomeForm
+                  onSubmit={handleCreate}
+                  currencies={currencies}
+                  ref={formRef}
+                />
+              )}
+              <div className="flex justify-end mt-4">
+                <Button variant="outline" onClick={() => setShowForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-5/6" />
+              <Skeleton className="h-6 w-2/3" />
+            </div>
+          ) : (
+            <IncomeList incomes={incomes || []} basePath={route} />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
