@@ -4,7 +4,6 @@
 
 @import "react-phone-number-input/style.css";
 
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

@@ -1,58 +1,109 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
-import { CurrencySchema, CurrencyFormData } from '../utils/zodSchemas';
-import { axiosInstance } from '../authentication/AuthenticationService';
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { axiosInstance } from "../authentication/AuthenticationService";
+import { CurrencySchema, CurrencyFormData } from "../utils/zodSchemas";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 
 export default function CreateCurrency() {
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CurrencyFormData>({ resolver: zodResolver(CurrencySchema) });
+  const form = useForm<CurrencyFormData>({
+    resolver: zodResolver(CurrencySchema),
+    defaultValues: {
+      code: "",
+      description: "",
+      is_local: false,
+    },
+  });
 
   const onSubmit = async (data: CurrencyFormData) => {
     try {
-      await axiosInstance.post('/api/currencies/currencies/', data);
-      toast.success('Currency created successfully');
-      navigate('/currencies');
+      await axiosInstance.post("/api/currencies/currencies/", data);
+      toast.success("Currency created successfully");
+      navigate("/currencies");
     } catch (error: any) {
       if (error.response?.data) {
-        const messages = Object.values(error.response.data).flat().join(' ');
-        toast.error(messages || 'Failed to create currency');
+        const messages = Object.values(error.response.data).flat().join(" ");
+        toast.error(messages || "Failed to create currency");
       } else {
-        toast.error('An unexpected error occurred.');
+        toast.error("An unexpected error occurred.");
       }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md p-4">
-      <h2 className="text-xl font-bold mb-4">Create Currency</h2>
+    <div className="max-w-md mx-auto p-6">
+      <h2 className="text-2xl font-semibold mb-6">Create Currency</h2>
 
-      <label className="block mb-2">
-        Code:
-        <input {...register('code')} className="border w-full p-1" />
-        {errors.code && <p className="text-red-600 text-sm">{errors.code.message}</p>}
-      </label>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Code Field */}
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Code</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. USD" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <label className="block mb-2">
-        Description:
-        <input {...register('description')} className="border w-full p-1" />
-        {errors.description && <p className="text-red-600 text-sm">{errors.description.message}</p>}
-      </label>
+          {/* Description Field */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. US Dollar" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <label className="block mb-2">
-        Is Local:
-        <input type="checkbox" {...register('is_local')} />
-      </label>
+          {/* Is Local Checkbox */}
+          <FormField
+            control={form.control}
+            name="is_local"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="text-sm font-medium leading-none">
+                  Is Local Currency
+                </FormLabel>
+              </FormItem>
+            )}
+          />
 
-      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Create
-      </button>
-    </form>
+          {/* Submit Button */}
+          <Button type="submit" className="w-full">
+            Create
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }
