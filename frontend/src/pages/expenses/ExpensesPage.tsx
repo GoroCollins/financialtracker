@@ -3,11 +3,27 @@ import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
-import { ExpensesFormValues, ExpensesResponse, Currency } from "../../utils/zodSchemas";
+import {
+  ExpensesFormValues,
+  ExpensesResponse,
+  Currency,
+} from "../../utils/zodSchemas";
 import ExpensesForm from "../../expenses/ExpensesForm";
 import ExpensesList from "../../expenses/ExpensesList";
 import { toast } from "sonner";
 import { useMemo, useState, useRef, useEffect } from "react";
+
+// ✅ shadcn/ui components
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, X } from "lucide-react";
 
 const ExpensesPage = () => {
   const { type } = useParams<{ type: ExpenseTypeKey }>();
@@ -15,14 +31,23 @@ const ExpensesPage = () => {
   const formRef = useRef<{ reset: () => void }>(null);
 
   if (!type || !(type in expensesTypeMap)) {
-    return <div className="p-4 text-red-600">Invalid expense type.</div>;
+    return (
+      <div className="p-4 text-destructive text-sm">
+        Invalid expense type.
+      </div>
+    );
   }
 
   const { endpoint, label, route } = expensesTypeMap[type];
 
-  const { data: expenses, mutate, isLoading, } = useSWR<ExpensesResponse[]>(endpoint, fetcher);
+  const { data: expenses, mutate, isLoading } = useSWR<ExpensesResponse[]>(
+    endpoint,
+    fetcher
+  );
 
-  const { data: rawCurrencies, isLoading: currenciesLoading, } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
+  const { data: rawCurrencies, isLoading: currenciesLoading } = useSWR<
+    Currency[]
+  >("/api/currencies/currencies", fetcher);
 
   const currencies = useMemo(() => {
     if (!Array.isArray(rawCurrencies)) return [];
@@ -41,48 +66,71 @@ const ExpensesPage = () => {
       formRef.current?.reset();
     } catch (error: any) {
       if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Return field-level errors to the form
+        return error.response.data;
       }
-      // If it's not a 400 validation error, fallback to global toast
       toast.error("Failed to create expense.");
     }
   };
- useEffect(() => {
-    setShowForm(false);  // Close the form
-    }, [type]);
+
+  useEffect(() => {
+    setShowForm(false);
+  }, [type]);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">{label}</h1>
-
-      {!showForm && (
-        <button
-          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
-          onClick={() => setShowForm(true)}
-        >
-          + Create Income
-        </button>
-      )}
-
-      {showForm && (
-        <>
-          {currenciesLoading ? (
-            <p>Loading currencies...</p>
+    <div className="container mx-auto p-6 space-y-6">
+      <Card className="shadow-md">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl font-semibold">{label}</CardTitle>
+          {!showForm ? (
+            <Button onClick={() => setShowForm(true)} className="gap-2">
+              <Plus className="w-4 h-4" /> Create Expense
+            </Button>
           ) : (
-            <ExpensesForm key={type}
-              onSubmit={handleCreate}
-              currencies={currencies}
-              ref={formRef}
-            />
+            <Button
+              onClick={() => setShowForm(false)}
+              variant="outline"
+              className="gap-2"
+            >
+              <X className="w-4 h-4" /> Cancel
+            </Button>
           )}
-        </>
-      )}
+        </CardHeader>
 
-      {isLoading ? (
-        <p>Loading expenses...</p>
-      ) : (
-        <ExpensesList expenses={expenses || []} basePath={route} />
-      )}
+        <Separator />
+
+        <CardContent className="space-y-6">
+          {showForm && (
+            <div className="p-4 border rounded-md bg-muted/30">
+              {currenciesLoading ? (
+                <div className="flex flex-col space-y-2">
+                  <Skeleton className="h-8 w-1/3" />
+                  <Skeleton className="h-8 w-2/3" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : (
+                <ExpensesForm
+                  key={type}
+                  onSubmit={handleCreate}
+                  currencies={currencies}
+                  ref={formRef}
+                />
+              )}
+            </div>
+          )}
+
+          <Separator />
+
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+          ) : (
+            <ExpensesList expenses={expenses || []} basePath={route} />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

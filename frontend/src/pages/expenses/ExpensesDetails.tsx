@@ -5,76 +5,178 @@ import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
 import { ExpensesResponse } from "../../utils/zodSchemas";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { useState } from "react";
-import ConfirmModal from "../../ConfirmModal";
 import { toast } from "sonner";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
 const ExpensesDetails = () => {
   const { type, id } = useParams<{ type: ExpenseTypeKey; id: string }>();
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // Validate route params early
   if (!type || !id || !(type in expensesTypeMap)) {
-    return <div className="p-4 text-red-600">Invalid expense type or ID.</div>;
+    return (
+      <div className="max-w-md mx-auto mt-10">
+        <Alert variant="destructive">
+          <AlertTitle>Invalid Request</AlertTitle>
+          <AlertDescription>
+            Invalid expense type or ID. Please check your link and try again.
+          </AlertDescription>
+        </Alert>
+        <div className="mt-4 text-center">
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const { endpoint, route, label } = expensesTypeMap[type];
-  const { data: expense, isLoading } = useSWR<ExpensesResponse>(`${endpoint}${id}/`, fetcher);
+  const { data: expense, isLoading } = useSWR<ExpensesResponse>(
+    `${endpoint}${id}/`,
+    fetcher
+  );
 
   const handleDelete = async () => {
     try {
       await axiosInstance.delete(`${endpoint}${id}/`);
-      toast.success("Expense deleted.");
+      toast.success("Expense deleted successfully.");
       navigate(route);
     } catch (error) {
       toast.error("Failed to delete expense.");
     }
   };
 
-  if (isLoading) return <p className="p-4">Loading...</p>;
-  if (!expense) return <p className="p-4 text-red-600">Expense not found.</p>;
+  if (isLoading) {
+    return (
+      <div className="max-w-xl mx-auto p-6 space-y-3">
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
+  }
+
+  if (!expense) {
+    return (
+      <div className="max-w-md mx-auto mt-10">
+        <Alert variant="destructive">
+          <AlertTitle>Expense Not Found</AlertTitle>
+          <AlertDescription>
+            The requested expense record could not be found.
+          </AlertDescription>
+        </Alert>
+        <div className="mt-4 text-center">
+          <Button variant="outline" onClick={() => navigate(route)}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const singularLabel = label.endsWith("s") ? label.slice(0, -1) : label;
 
   return (
-    <div className="p-4 max-w-xl mx-auto border rounded shadow-sm bg-white">
-      <h2 className="text-2xl font-bold mb-1">{label.endsWith("s") ? label.slice(0, -1) : label} Details</h2>
-      <p className="text-gray-600 mb-4 text-lg"><strong>Name:</strong> {expense.expense_name}</p>
+    <div className="max-w-xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">
+            {singularLabel} Details
+          </CardTitle>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-4 space-y-2 text-sm text-muted-foreground">
+          <p>
+            <span className="font-medium text-foreground">Name:</span>{" "}
+            {expense.expense_name}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Currency:</span>{" "}
+            {expense.currency}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Amount:</span>{" "}
+            {expense.amount}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Amount (Local):</span>{" "}
+            {expense.amount_lcy_display}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Notes:</span>{" "}
+            {expense.notes || "—"}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Created by:</span>{" "}
+            {expense.created_by} on {expense.created_at}
+          </p>
+          {expense.modified_by && (
+            <p>
+              <span className="font-medium text-foreground">Modified by:</span>{" "}
+              {expense.modified_by} on {expense.modified_at}
+            </p>
+          )}
 
-      <p><strong>Currency:</strong> {expense.currency}</p>
-      <p><strong>Amount:</strong> {expense.amount}</p>
-      <p><strong>Amount (Local):</strong> {expense.amount_lcy_display}</p>
-      <p><strong>Notes:</strong> {expense.notes || "—"}</p>
-      <p><strong>Created by:</strong> {expense.created_by} on {expense.created_at}</p>
-      {expense.modified_by && (
-        <p><strong>Modified by:</strong> {expense.modified_by} on {expense.modified_at}</p>
-      )}
+          <Separator className="my-4" />
 
-      <div className="mt-6 flex gap-4">
-        <Link
-          to={`${route}/edit/${expense.id}`}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Update
-        </Link>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-        >
-          Delete
-        </button>
-        <Link
-          to={route}
-          className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
-        >
-          Back
-        </Link>
-      </div>
+          <div className="flex gap-3 flex-wrap">
+            <Link to={`${route}/edit/${expense.id}`}>
+              <Button>
+                <Pencil className="h-4 w-4 mr-2" /> Update
+              </Button>
+            </Link>
 
-      <ConfirmModal
-        isOpen={showModal}
-        title="Confirm Deletion"
-        message={`Are you sure you want to delete "${expense.expense_name}"?`}
-        onCancel={() => setShowModal(false)}
-        onConfirm={handleDelete}
-      />
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete “{expense.expense_name}”? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button variant="outline" onClick={() => navigate(route)}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
