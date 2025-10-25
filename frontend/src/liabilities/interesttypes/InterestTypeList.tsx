@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
 import { InterestTypeItem } from "../../utils/zodSchemas";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 interface Props {
   interestTypes: InterestTypeItem[];
@@ -8,26 +11,34 @@ interface Props {
 
 const InterestTypeList: React.FC<Props> = ({ interestTypes, basePath }) => {
   if (!interestTypes.length) {
-    return <p>No interest types found.</p>;
+    return <p className="text-muted-foreground">No interest types found.</p>;
   }
 
   return (
-    <ul className="space-y-2">
+    <div className="space-y-4">
       {interestTypes.map((type) => (
-        <li key={type.code} className="border p-3 rounded shadow">
-          <div className="flex justify-between items-center">
+        <Card key={type.code} className="shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <p className="font-bold">{type.code}</p>
-              <p>{type.description}</p>
-              <small>Created by {type.created_by} on {type.created_at}</small>
+              <CardTitle className="text-lg font-semibold">{type.code}</CardTitle>
+              <p className="text-sm text-muted-foreground">{type.description}</p>
             </div>
-            <Link to={`${basePath}/${type.code}`} className="text-blue-600 underline">
-              View
-            </Link>
-          </div>
-        </li>
+            <Button variant="outline" asChild>
+              <Link to={`${basePath}/${type.code}`}>View</Link>
+            </Button>
+          </CardHeader>
+
+          <Separator />
+
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              Created by <span className="font-medium">{type.created_by}</span> on{" "}
+              {new Date(type.created_at).toLocaleDateString()}
+            </p>
+          </CardContent>
+        </Card>
       ))}
-    </ul>
+    </div>
   );
 };
 

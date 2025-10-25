@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { axiosInstance } from "../../../authentication/AuthenticationService";
 import { InterestTypeFormValues, InterestTypeResponse } from "../../../utils/zodSchemas";
 import InterestTypeForm from "../../../liabilities/interesttypes/InterestTypeForm";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 const EditInterestType = () => {
   const { code } = useParams<{ code: string }>();
@@ -27,14 +29,26 @@ const EditInterestType = () => {
 
   return (
     <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Edit Interest Type</h1>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : interestType ? (
-        <InterestTypeForm onSubmit={handleUpdate} initialValues={interestType} isEditing />
-      ) : (
-        <p className="text-red-600">Interest type not found.</p>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Edit Interest Type</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Spinner className="w-8 h-8" />
+            </div>
+          ) : interestType ? (
+            <InterestTypeForm
+              onSubmit={handleUpdate}
+              initialValues={interestType}
+              isEditing
+            />
+          ) : (
+            <p className="text-red-600 text-center">Interest type not found.</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

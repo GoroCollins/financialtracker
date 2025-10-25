@@ -1,7 +1,18 @@
-import  { useEffect, forwardRef, useImperativeHandle, } from "react";
+import { useEffect, forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { interestTypeSchema, InterestTypeFormValues, } from "../../utils/zodSchemas";
+import { interestTypeSchema, InterestTypeFormValues } from "../../utils/zodSchemas";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export interface InterestTypeFormHandle {
   reset: () => void;
@@ -15,33 +26,62 @@ interface Props {
 
 const InterestTypeForm = forwardRef<InterestTypeFormHandle, Props>(
   ({ onSubmit, initialValues, isEditing = false }, ref) => {
-    const { register, handleSubmit, reset, formState: { errors },
-    } = useForm<InterestTypeFormValues>({ resolver: zodResolver(interestTypeSchema), defaultValues: initialValues, });
+    const form = useForm<InterestTypeFormValues>({
+      resolver: zodResolver(interestTypeSchema),
+      defaultValues: initialValues,
+    });
+
+    const { reset, handleSubmit, control } = form;
 
     useEffect(() => {
-      if (initialValues) {
-        reset(initialValues);
-      }
+      if (initialValues) reset(initialValues);
     }, [initialValues, reset]);
 
-    // Expose the reset method to parent
     useImperativeHandle(ref, () => ({ reset }), [reset]);
 
     return (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mb-6">
-        <input {...register("code")} placeholder="Interest Type Code" className="form-control" disabled={isEditing} />
-        {errors.code && <p className="text-red-500">{errors.code.message}</p>}
-
-        <input {...register("description")} placeholder="Description" className="form-control" />
-        {errors.description && ( <p className="text-red-500">{errors.description.message}</p> )}
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+      <Form {...form}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6 max-w-md mb-6"
         >
-          {isEditing ? "Update" : "Create"}
-        </button>
-      </form>
+          <FormField
+            control={control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Interest Type Code</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Interest Type Code"
+                    disabled={isEditing}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input placeholder="Description" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit">
+            {isEditing ? "Update" : "Create"}
+          </Button>
+        </form>
+      </Form>
     );
   }
 );
