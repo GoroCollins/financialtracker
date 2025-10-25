@@ -52,7 +52,7 @@ const AssetForm: React.FC<Props> = ({
     reset,
     setError,
     handleSubmit,
-    formState: { errors },
+    // formState: { errors },
   } = form;
 
   useEffect(() => {
