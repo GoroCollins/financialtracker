@@ -1,11 +1,27 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useSWR from "swr";
-import { fetcher } from "../../utils/swrFetcher";
-import { toast } from "sonner";
-import { axiosInstance } from "../../authentication/AuthenticationService";
-import ConfirmModal from "../../ConfirmModal";
-import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
 import { useState } from "react";
+import { toast } from "sonner";
+import { fetcher } from "../../utils/swrFetcher";
+import { axiosInstance } from "../../authentication/AuthenticationService";
+import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Loader2, Trash2, Pencil, ArrowLeft } from "lucide-react";
 
 interface AssetDetail {
   id: number;
@@ -28,79 +44,118 @@ const AssetDetails = () => {
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
 
+  if (!type || !(type in assetEndpointsMap) || !id) {
+    return (
+      <div className="p-6 text-center text-destructive">
+        Invalid asset type or ID.
+      </div>
+    );
+  }
 
-    if (!type || !(type in assetEndpointsMap) || !id) {
-    return <div className="p-4 text-red-600">Invalid asset type or ID.</div>;
-    }
-
-    const { endpoint, route, singularLabel } = assetEndpointsMap[type];
-    const assetDetailUrl = `${endpoint}${id}/`;
+  const { endpoint, route, singularLabel } = assetEndpointsMap[type];
+  const assetDetailUrl = `${endpoint}${id}/`;
 
   const { data: asset, isLoading } = useSWR<AssetDetail>(assetDetailUrl, fetcher);
 
   const handleDelete = async () => {
     try {
       await axiosInstance.delete(assetDetailUrl);
-      toast.success("Asset deleted.");
+      toast.success(`${singularLabel} deleted.`);
       navigate(route);
     } catch {
-      toast.error("Failed to delete asset.");
+      toast.error(`Failed to delete ${singularLabel}.`);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
+        <span className="ml-2 text-sm text-muted-foreground">
+          Loading asset details...
+        </span>
+      </div>
+    );
+  }
+
+  if (!asset) {
+    return <p className="text-center text-destructive py-6">Asset not found.</p>;
+  }
+
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      {isLoading ? (
-        <p>Loading asset details...</p>
-      ) : asset ? (
-        <>
-          <h2 className="text-2xl font-bold mb-1">{singularLabel} Details</h2>
-          <p className="text-2xl font-bold mb-4"><strong>Name:</strong> {asset.name}</p>
+    <div className="p-6 max-w-2xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>{singularLabel} Details</CardTitle>
+          <CardDescription>
+            Created by {asset.created_by} on {asset.created_at}
+          </CardDescription>
+        </CardHeader>
 
-          <div className="space-y-2 text-sm text-gray-700">
-            <p><strong>Currency:</strong> {asset.currency}</p>
-            <p><strong>Amount:</strong> {asset.amount}</p>
-            <p><strong>Amount (LCY):</strong> {asset.amount_lcy_display}</p>
-            {asset.source && <p><strong>Source:</strong> {asset.source}</p>}
-            {asset.ratio !== undefined && (<p> <strong>Ratio:</strong> {(asset.ratio * 100).toFixed(2)}% </p> )}
-            {asset.employer && <p><strong>Employer:</strong> {asset.employer}</p>}
-            {asset.notes && <p><strong>Notes:</strong> {asset.notes}</p>}
-            <p><strong>Created By:</strong> {asset.created_by} on {asset.created_at}</p>
-            {asset.modified_by && <p><strong>Modified By:</strong> {asset.modified_by} on {asset.modified_at}</p>}
-          </div>
+        <CardContent className="space-y-3 text-sm">
+          <p><strong>Name:</strong> {asset.name}</p>
+          <p><strong>Currency:</strong> {asset.currency}</p>
+          <p><strong>Amount:</strong> {asset.amount}</p>
+          <p><strong>Amount (LCY):</strong> {asset.amount_lcy_display}</p>
+          {asset.source && <p><strong>Source:</strong> {asset.source}</p>}
+          {asset.ratio !== undefined && (
+            <p><strong>Ratio:</strong> {(asset.ratio * 100).toFixed(2)}%</p>
+          )}
+          {asset.employer && <p><strong>Employer:</strong> {asset.employer}</p>}
+          {asset.notes && <p><strong>Notes:</strong> {asset.notes}</p>}
+          {asset.modified_by && (
+            <p>
+              <strong>Modified By:</strong> {asset.modified_by} on{" "}
+              {asset.modified_at}
+            </p>
+          )}
 
-          <div className="mt-6 flex gap-3">
-            <Link
-              to={`/assets/${type}/edit/${id}`}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Update
+          <div className="flex gap-3 mt-4">
+            <Link to={`/assets/${type}/edit/${id}`}>
+              <Button variant="default" className="flex items-center gap-2">
+                <Pencil className="h-4 w-4" /> Update
+              </Button>
             </Link>
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => navigate(`/assets/${type}`)}
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-            >
-              Back
-            </button>
-          </div>
 
-          <ConfirmModal
-            isOpen={showConfirm}
-            title="Confirm Deletion"
-            message={`Are you sure you want to delete "${asset.name}"?`}
-            onCancel={() => setShowConfirm(false)}
-            onConfirm={handleDelete}
-          />
-        </>
-      ) : (
-        <p className="text-red-600">Asset not found.</p>
-      )}
+            <Button
+              variant="destructive"
+              className="flex items-center gap-2"
+              onClick={() => setShowConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4" /> Delete
+            </Button>
+
+            <Button
+              variant="secondary"
+              className="flex items-center gap-2"
+              onClick={() => navigate(`/assets/${type}`)}
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Confirm Deletion Dialog */}
+      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{asset.name}</strong>?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

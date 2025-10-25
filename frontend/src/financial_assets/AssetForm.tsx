@@ -4,6 +4,28 @@ import { useEffect, useMemo } from "react";
 import { AssetTypeKey } from "../constants/assetsTypes";
 import { AssetFormValues, getAssetSchema, Currency } from "../utils/zodSchemas";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+
 interface Props {
   assetType: AssetTypeKey;
   initialValues?: AssetFormValues;
@@ -17,93 +39,212 @@ const AssetForm: React.FC<Props> = ({
   initialValues,
   onSubmit,
   isEditing = false,
-  currencies
+  currencies,
 }) => {
-  // Dynamically get schema for selected asset type
   const schema = useMemo(() => getAssetSchema(assetType), [assetType]);
 
-  const { register, handleSubmit, reset, setError, formState: { errors } } 
-  = useForm<AssetFormValues>({resolver: zodResolver(schema), defaultValues: initialValues || {} });
+  const form = useForm<AssetFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: initialValues || {},
+  });
 
-useEffect(() => {
-  if (initialValues) {
-    const base = {
-      ...initialValues,
-      amount: Number(initialValues.amount),
-    };
+  const {
+    reset,
+    setError,
+    handleSubmit,
+    formState: { errors },
+  } = form;
 
-    if (assetType === "equity" && "ratio" in initialValues) {
-      (base as any).ratio = Number((initialValues as any).ratio);
+  useEffect(() => {
+    if (initialValues) {
+      const base = {
+        ...initialValues,
+        amount: Number(initialValues.amount),
+      };
+      if (assetType === "equity" && "ratio" in initialValues) {
+        (base as any).ratio = Number((initialValues as any).ratio);
+      }
+      reset(base);
     }
-
-    reset(base);
-  }
-}, [initialValues, reset, assetType]);
+  }, [initialValues, reset, assetType]);
 
   const handleFormSubmit = async (data: AssetFormValues) => {
     const backendErrors = await onSubmit(data);
-    if (backendErrors) { Object.entries(backendErrors).forEach(([field, messages]) => {
-        setError(field as keyof AssetFormValues, { type: "server", message: messages.join(" "), });
-});
+    if (backendErrors) {
+      Object.entries(backendErrors).forEach(([field, messages]) => {
+        setError(field as keyof AssetFormValues, {
+          type: "server",
+          message: messages.join(" "),
+        });
+      });
     }
   };
 
+  const localCurrencies = currencies.filter((c) => c.is_local);
+  const foreignCurrencies = currencies.filter((c) => !c.is_local);
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-w-md mb-6">
-      <select {...register("currency")} className="form-select">
-        <option value="">Select Currency</option>
-        {currencies
-          .filter((c) => c.is_local)
-          .map((currency) => (
-            <option key={currency.code} value={currency.code}>
-              {currency.code} - {currency.description}
-            </option>
-          ))}
-        {currencies.some((c) => !c.is_local) && <option disabled>──────────</option>}
-        {currencies
-          .filter((c) => !c.is_local)
-          .map((currency) => (
-            <option key={currency.code} value={currency.code}>
-              {currency.code} - {currency.description}
-            </option>
-          ))}
-      </select>
-      {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+    <Form {...form}>
+      <form
+        onSubmit={handleSubmit(handleFormSubmit)}
+        className="space-y-6 max-w-md mb-8"
+      >
+        {/* Currency */}
+        <FormField
+          control={form.control}
+          name="currency"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Currency</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Currency" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {localCurrencies.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Local</SelectLabel>
+                      {localCurrencies.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} - {currency.description}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+                  {foreignCurrencies.length > 0 && (
+                    <>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Foreign</SelectLabel>
+                        {foreignCurrencies.map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.code} - {currency.description}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <input {...register("name")} placeholder="Asset Name" className="form-control" />
-      {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+        {/* Name */}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Asset Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Asset Name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <input type="number" step="0.01" {...register("amount", { valueAsNumber: true })} placeholder="Amount" className="form-control" />
-      {errors.amount && <p className="text-red-500">{errors.amount.message}</p>}
+        {/* Amount */}
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Amount</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Amount"
+                  {...field}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {assetType === "liquid" && (
-        <>
-          <input {...register("source")} placeholder="Source" className="form-control" />
-          {"source" in errors && <p className="text-red-500">{errors.source?.message}</p>}
-        </>
-      )}
+        {/* Conditional Fields */}
+        {assetType === "liquid" && (
+          <FormField
+            control={form.control}
+            name="source"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Source</FormLabel>
+                <FormControl>
+                  <Input placeholder="Source" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-      {assetType === "equity" && (
-        <>
-          <input type="number" step="0.01" {...register("ratio", { valueAsNumber: true })} placeholder="Ratio" className="form-control" />
-          {"ratio" in errors && <p className="text-red-500">{errors.ratio?.message}</p>}
-        </>
-      )}
+        {assetType === "equity" && (
+          <FormField
+            control={form.control}
+            name="ratio"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Ratio</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ratio"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-      {assetType === "retirement" && (
-        <>
-          <input {...register("employer")} placeholder="Employer" className="form-control" />
-          {"employer" in errors && <p className="text-red-500">{errors.employer?.message}</p>}
-        </>
-      )}
+        {assetType === "retirement" && (
+          <FormField
+            control={form.control}
+            name="employer"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Employer</FormLabel>
+                <FormControl>
+                  <Input placeholder="Employer" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-      <textarea {...register("notes")} placeholder="Notes (optional)" className="form-control" />
+        {/* Notes */}
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Notes (optional)" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-        {isEditing ? "Update" : "Create"}
-      </button>
-    </form>
+        {/* Submit */}
+        <Button type="submit" className="w-full">
+          {isEditing ? "Update" : "Create"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 

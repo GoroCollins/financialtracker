@@ -1,6 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { AssetTypeKey } from "../constants/assetsTypes";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export interface AssetListItem {
   id: number;
@@ -10,7 +19,7 @@ export interface AssetListItem {
   amount_lcy_display: string;
   created_by: string;
   created_at: string;
-  asset_type: AssetTypeKey;  // Injected manually
+  asset_type: AssetTypeKey; // Injected manually
 }
 
 interface Props {
@@ -18,28 +27,45 @@ interface Props {
   basePath: string;
 }
 
-const AssetList: React.FC<Props> = ({ assets, basePath }) => (
-  <div className="space-y-4 mt-6">
-    {assets.map((asset) => (
-      <div key={asset.id} className="border p-4 rounded shadow-sm">
-        <div className="text-lg font-semibold">{asset.name}</div>
-        <div className="text-gray-600 text-sm">
-          {asset.currency} {asset.amount} — {asset.amount_lcy_display}
-        </div>
-        <div className="text-sm text-gray-500 mt-1">
-          Created by {asset.created_by} on {asset.created_at}
-        </div>
-        <div className="mt-3 flex gap-4">  
-          <Link
-            to={`${basePath}/details/${asset.id}`}
-            className="text-blue-600 underline hover:text-blue-800"
-          >
-            View Details
-          </Link>
-        </div>
+const AssetList: React.FC<Props> = ({ assets, basePath }) => {
+  if (!assets || assets.length === 0) {
+    return (
+      <div className="text-center text-sm text-muted-foreground mt-8">
+        No assets found.
       </div>
-    ))}
-  </div>
-);
+    );
+  }
+
+  return (
+    <div className="grid gap-4 mt-6 sm:grid-cols-2 lg:grid-cols-3">
+      {assets.map((asset) => (
+        <Card key={asset.id} className="flex flex-col justify-between">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">
+              {asset.name}
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              {asset.currency} {asset.amount.toLocaleString()} —{" "}
+              {asset.amount_lcy_display}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="text-xs text-muted-foreground">
+            <div>
+              Created by <span className="font-medium">{asset.created_by}</span>
+            </div>
+            <div>{new Date(asset.created_at).toLocaleString()}</div>
+          </CardContent>
+
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full">
+              <Link to={`${basePath}/details/${asset.id}`}>View Details</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+};
 
 export default AssetList;

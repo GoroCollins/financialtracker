@@ -1,20 +1,32 @@
 import { useParams, useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { fetcher } from "../../utils/swrFetcher";
-import { AssetFormValues } from "../../utils/zodSchemas";
-import { Currency } from "../../utils/zodSchemas";
-import AssetForm from "../../financial_assets/AssetForm";
+import { useMemo } from "react";
 import { toast } from "sonner";
+import { fetcher } from "../../utils/swrFetcher";
+import { AssetFormValues, Currency } from "../../utils/zodSchemas";
+import AssetForm from "../../financial_assets/AssetForm";
 import { axiosInstance } from "../../authentication/AuthenticationService";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
-import { useMemo } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 const EditAsset = () => {
   const { type, id } = useParams<{ type: AssetTypeKey; id: string }>();
   const navigate = useNavigate();
 
   if (!type || !(type in assetEndpointsMap) || !id) {
-    return <div className="p-4 text-red-600">Invalid asset type or ID.</div>;
+    return (
+      <div className="p-6 text-center text-destructive">
+        Invalid asset type or ID.
+      </div>
+    );
   }
 
   const { endpoint, singularLabel, route } = assetEndpointsMap[type];
@@ -37,36 +49,64 @@ const EditAsset = () => {
     });
   }, [rawCurrencies]);
 
-  const handleUpdate = async (payload: AssetFormValues): Promise<Record<string, string[]> | undefined>  => {
+  const handleUpdate = async (
+    payload: AssetFormValues
+  ): Promise<Record<string, string[]> | undefined> => {
     try {
       await axiosInstance.put(`${endpoint}${id}/`, payload);
-      toast.success("Asset updated.");
+      toast.success(`${singularLabel} updated.`);
       navigate(route);
     } catch (error: any) {
-    if (error.response?.status === 400 && error.response.data) {
-      return error.response.data; // Return validation errors
+      if (error.response?.status === 400 && error.response.data) {
+        return error.response.data; // Return validation errors
+      }
+      toast.error(`Failed to update ${singularLabel}.`);
     }
-    toast.error("Failed to update asset.");
-  }
   };
 
-  return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Edit {singularLabel}</h1>
+  if (isLoading || currenciesLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
+        <span className="ml-2 text-sm text-muted-foreground">
+          Loading {singularLabel}...
+        </span>
+      </div>
+    );
+  }
 
-      {isLoading || currenciesLoading ? (
-        <p>Loading...</p>
-      ) : asset ? (
-        <AssetForm
-          assetType={type}
-          initialValues={asset}
-          onSubmit={handleUpdate}
-          isEditing
-          currencies={currencies}
-        />
-      ) : (
-        <p className="text-red-600">Asset not found.</p>
-      )}
+  if (!asset) {
+    return <p className="text-center text-destructive py-6">Asset not found.</p>;
+  }
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Edit {singularLabel}</CardTitle>
+          <CardDescription>Update details and save changes</CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <AssetForm
+            assetType={type}
+            initialValues={asset}
+            onSubmit={handleUpdate}
+            isEditing
+            currencies={currencies}
+          />
+
+          <div className="flex justify-end mt-4">
+            <Button
+              variant="secondary"
+              className="flex items-center gap-2"
+              onClick={() => navigate(route)}
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

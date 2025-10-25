@@ -6,15 +6,23 @@ import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
 import { AssetFormValues, Currency } from "../../utils/zodSchemas";
 import { useMemo, useState, useEffect } from "react";
 import AssetForm from "../../financial_assets/AssetForm";
-import AssetList, { AssetListItem} from "../../financial_assets/AssetList";
+import AssetList, { AssetListItem } from "../../financial_assets/AssetList";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AssetPage = () => {
   const { type } = useParams<{ type: AssetTypeKey }>();
   const [showForm, setShowForm] = useState(false);
 
   if (!type || !(type in assetEndpointsMap)) {
-    return <div className="p-4 text-red-600">Invalid asset type.</div>;
+    return (
+      <div className="p-6 text-destructive text-sm font-medium bg-destructive/10 rounded-md">
+        Invalid asset type.
+      </div>
+    );
   }
 
   const { endpoint, label, route } = assetEndpointsMap[type];
@@ -22,11 +30,12 @@ const AssetPage = () => {
   const {
     data: assets,
     mutate,
-    isLoading
+    isLoading,
   } = useSWR(`${endpoint}`, fetcher);
+
   const {
     data: rawCurrencies,
-    isLoading: currenciesLoading
+    isLoading: currenciesLoading,
   } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
 
   const currencies = useMemo(() => {
@@ -45,37 +54,59 @@ const AssetPage = () => {
       await mutate();
     } catch (error: any) {
       if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Return field-level errors to the form
+        return error.response.data; // Field-level errors for form
       }
-      // If it's not a 400 validation error, fallback to global toast
       toast.error("Failed to create asset.");
     }
   };
+
   useEffect(() => {
-  setShowForm(false);  // Close the form
-    }, [type]);
+    setShowForm(false); // Reset when switching asset type
+  }, [type]);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">{label}</h1>
-
-      <div className="mb-4">
-        {!showForm ? (
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={() => setShowForm(true)}
-          >
-            + Create New Asset
-          </button>
-        ) : (
-          <AssetForm key={type} assetType={type} onSubmit={handleCreate} currencies={currencies} />
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">{label}</h1>
+        {!showForm && (
+          <Button onClick={() => setShowForm(true)}>+ Create New Asset</Button>
         )}
       </div>
 
-      {currenciesLoading || isLoading ? (
-        <p>Loading...</p>
+      <Separator />
+
+      {showForm && (
+        <Card className="max-w-xl">
+          <CardContent className="pt-6">
+            <AssetForm
+              key={type}
+              assetType={type}
+              onSubmit={handleCreate}
+              currencies={currencies}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {(currenciesLoading || isLoading) ? (
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-40" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
       ) : (
-        <AssetList assets={(assets || []).map((asset: Omit<AssetListItem, "asset_type">) => ({ ...asset, asset_type: type }))} basePath={route} />
+        <AssetList
+          assets={(assets || []).map(
+            (asset: Omit<AssetListItem, "asset_type">) => ({
+              ...asset,
+              asset_type: type,
+            })
+          )}
+          basePath={route}
+        />
       )}
     </div>
   );
