@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
 import { incomeTypeMap, IncomeTypeKey } from "../../constants/incomeTypes";
@@ -7,8 +7,9 @@ import { axiosInstance } from "../../authentication/AuthenticationService";
 import IncomeForm from "../../income/IncomeForm";
 import { toast } from "sonner";
 import { useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 const EditIncome = () => {
   const { type, id } = useParams<{ type: IncomeTypeKey; id: string }>();
@@ -86,6 +87,11 @@ const EditIncome = () => {
             )
           )}
         </CardContent>
+        <CardFooter className="flex justify-end gap-3 pt-4">
+          <Link to={route}>
+            <Button variant="outline">Back</Button>
+          </Link>
+        </CardFooter>
       </Card>
     </div>
   );
