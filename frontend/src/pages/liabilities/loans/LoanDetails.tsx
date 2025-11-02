@@ -4,7 +4,7 @@ import { fetcher } from "../../../utils/swrFetcher";
 import { LoanItem } from "../../../utils/zodSchemas";
 import { useState } from "react";
 import ConfirmModal from "../../../ConfirmModal";
-import { axiosInstance } from "../../../authentication/AuthenticationService";
+import { axiosInstance } from "../../../services/apiClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";

@@ -62,7 +62,7 @@ const AssetForm: React.FC<Props> = ({
         amount: Number(initialValues.amount),
       };
       if (assetType === "equity" && "ratio" in initialValues) {
-        (base as any).ratio = Number((initialValues as any).ratio);
+        (base as { ratio: number }).ratio = Number((initialValues as { ratio: number }).ratio);
       }
       reset(base);
     }

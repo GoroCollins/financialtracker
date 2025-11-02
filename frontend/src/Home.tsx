@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuthService } from "./authentication/AuthenticationService";
+import { useAuthService } from "./hooks/useAuthService";
 import useSWR from "swr";
 import { fetcher } from "./utils/swrFetcher";
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, } from "recharts";

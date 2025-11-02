@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, startTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useSWR from 'swr';
-import { axiosInstance, useAuthService } from './AuthenticationService';
+import { useAuthService } from '../hooks/useAuthService';
+import { axiosInstance } from "../services/apiClient";
 import placeholderProfileImage from '../assets/placeholder.png';
 import { toast } from "sonner";
 import { UserProfileForm, userProfileSchema } from '../utils/zodSchemas';
@@ -31,7 +32,10 @@ const UserProfile: React.FC = () => {
       form.setValue("middle_name", user.middle_name || "");
       form.setValue("last_name", user.last_name);
       form.setValue("phone_number", user.phone_number || "");
-      setPreviewImage(user.profile_image || null);
+      // setPreviewImage(user.profile_image || null);
+      startTransition(() => {
+        setPreviewImage(user.profile_image || null);
+    });
     }
   }, [user, form]);
 

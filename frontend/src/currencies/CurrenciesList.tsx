@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
-import { axiosInstance } from "../authentication/AuthenticationService";
+import { axiosInstance } from "../services/apiClient";
 import { Currency } from "../utils/zodSchemas";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";

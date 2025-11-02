@@ -1,9 +1,9 @@
 import { useNavigate, useParams, Link } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
-import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
+import { expensesTypeMap, ExpenseTypeKey, ExpenseTypeConfig } from "../../constants/expensesTypes";
 import { ExpensesResponse } from "../../utils/zodSchemas";
-import { axiosInstance } from "../../authentication/AuthenticationService";
+import { axiosInstance } from "../../services/apiClient";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -24,14 +24,40 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 const ExpensesDetails = () => {
   const { type, id } = useParams<{ type: ExpenseTypeKey; id: string }>();
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Validate route params early
-  if (!type || !id || !(type in expensesTypeMap)) {
+  const isInvalid = !type || !id || !(type in expensesTypeMap);
+  const config: ExpenseTypeConfig | null = !isInvalid ? expensesTypeMap[type] : null;
+
+  const { data: expense, isLoading } = useSWR<ExpensesResponse>(
+    !isInvalid && config ? `${config.endpoint}${id}/` : null,
+    fetcher
+  );
+
+  const handleDelete = async () => {
+    if (!config || !id) return;
+    
+    setConfirmOpen(false);
+    try {
+      await axiosInstance.delete(`${config.endpoint}${id}/`);
+      toast.success("Expense deleted successfully.");
+      navigate(config.route);
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data; // Validation errors for form
+      }
+      toast.error(extractErrorMessage(error));
+    }
+  };
+
+    if (isInvalid || !config) {
     return (
       <div className="max-w-md mx-auto mt-10">
         <Alert variant="destructive">
@@ -48,22 +74,6 @@ const ExpensesDetails = () => {
       </div>
     );
   }
-
-  const { endpoint, route, label } = expensesTypeMap[type];
-  const { data: expense, isLoading } = useSWR<ExpensesResponse>(
-    `${endpoint}${id}/`,
-    fetcher
-  );
-
-  const handleDelete = async () => {
-    try {
-      await axiosInstance.delete(`${endpoint}${id}/`);
-      toast.success("Expense deleted successfully.");
-      navigate(route);
-    } catch (error) {
-      toast.error("Failed to delete expense.");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -85,7 +95,7 @@ const ExpensesDetails = () => {
           </AlertDescription>
         </Alert>
         <div className="mt-4 text-center">
-          <Button variant="outline" onClick={() => navigate(route)}>
+          <Button variant="outline" onClick={() => navigate(config.route)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
           </Button>
         </div>
@@ -93,7 +103,7 @@ const ExpensesDetails = () => {
     );
   }
 
-  const singularLabel = label.endsWith("s") ? label.slice(0, -1) : label;
+  const singularLabel = config.label.endsWith("s") ? config.label.slice(0, -1) : config.label;
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -139,7 +149,7 @@ const ExpensesDetails = () => {
           <Separator className="my-4" />
 
           <div className="flex gap-3 flex-wrap">
-            <Link to={`${route}/edit/${expense.id}`}>
+            <Link to={`${config.route}/edit/${expense.id}`}>
               <Button>
                 <Pencil className="h-4 w-4 mr-2" /> Update
               </Button>
@@ -171,7 +181,7 @@ const ExpensesDetails = () => {
               </AlertDialogContent>
             </AlertDialog>
 
-            <Button variant="outline" onClick={() => navigate(route)}>
+            <Button variant="outline" onClick={() => navigate(config.route)}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
           </div>

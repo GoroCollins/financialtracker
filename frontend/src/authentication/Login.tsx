@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { useAuthService } from "./AuthenticationService";
+import { useAuthService } from "../hooks/useAuthService";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel,} from "@/components/ui/field";
 import { Input,  } from "@/components/ui/input";
+import { AxiosError } from "axios";
 
 interface LoginFormInputs {
   username: string;
   password: string;
+}
+
+interface LoginErrorResponse {
+  detail?: string;
 }
 
 const Login: React.FC = () => {
@@ -32,10 +37,14 @@ const Login: React.FC = () => {
       await login(data.username, data.password);
       navigate(state?.from?.pathname || "/home");
       form.reset();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as AxiosError<LoginErrorResponse>;
+      const message =
+        error.response?.data?.detail || "Invalid username or password.";
+
       form.setError("password", {
         type: "manual",
-        message: "Invalid username or password.",
+        message,
       });
     }
   };
@@ -120,7 +129,7 @@ const Login: React.FC = () => {
                 )}
               />
               <Field>
-                <div className="flex gap-2 mt-4 items-center justify-center">
+                <div className="flex gap-4 mt-4 items-center justify-center">
                   <Button type="submit">Login</Button>
                   <Button
                     type="button"
@@ -129,6 +138,10 @@ const Login: React.FC = () => {
                   >
                     Back
                   </Button>
+                  <div className="tw-:bg-blue-500 tw-:text-white tw-:p-4 tw-:rounded-lg">
+  Tailwind is working if this box is blue.
+</div>
+
                 </div>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { axiosInstance } from "../authentication/AuthenticationService";
+import { axiosInstance } from "../services/apiClient";
 import { CurrencySchema, CurrencyFormData } from "../utils/zodSchemas";
 import {
   Form,
@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../utils/errorHandler";
 
 export default function CreateCurrency() {
   const navigate = useNavigate();
@@ -33,13 +35,9 @@ export default function CreateCurrency() {
       await axiosInstance.post("/api/currencies/currencies/", data);
       toast.success("Currency created successfully");
       navigate("/currencies");
-    } catch (error: any) {
-      if (error.response?.data) {
-        const messages = Object.values(error.response.data).flat().join(" ");
-        toast.error(messages || "Failed to create currency");
-      } else {
-        toast.error("An unexpected error occurred.");
-      }
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error as AxiosError);
+      toast.error(message)
     }
   };
 

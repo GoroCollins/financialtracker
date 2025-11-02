@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
-import { axiosInstance } from "../../authentication/AuthenticationService";
+import { axiosInstance } from "../../services/apiClient";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
 import { AssetFormValues, Currency } from "../../utils/zodSchemas";
 import { useMemo, useState, useEffect } from "react";
@@ -12,31 +12,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 const AssetPage = () => {
   const { type } = useParams<{ type: AssetTypeKey }>();
   const [showForm, setShowForm] = useState(false);
+  const endpoint = type && assetEndpointsMap[type]?.endpoint;
+  const label = type && assetEndpointsMap[type]?.label;
+  const route = type && assetEndpointsMap[type]?.route || "";
 
-  if (!type || !(type in assetEndpointsMap)) {
-    return (
-      <div className="p-6 text-destructive text-sm font-medium bg-destructive/10 rounded-md">
-        Invalid asset type.
-      </div>
-    );
-  }
+  const {data: assets, mutate, isLoading,} = useSWR(endpoint ? `${endpoint}` : null, fetcher);
 
-  const { endpoint, label, route } = assetEndpointsMap[type];
-
-  const {
-    data: assets,
-    mutate,
-    isLoading,
-  } = useSWR(`${endpoint}`, fetcher);
-
-  const {
-    data: rawCurrencies,
-    isLoading: currenciesLoading,
-  } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
+  const {data: rawCurrencies, isLoading: currenciesLoading,} = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
 
   const currencies = useMemo(() => {
     if (!rawCurrencies) return [];
@@ -46,23 +34,33 @@ const AssetPage = () => {
     });
   }, [rawCurrencies]);
 
+useEffect(() => {
+  setTimeout(() => setShowForm(false), 0);
+}, [type]);
+
   const handleCreate = async (payload: AssetFormValues) => {
     try {
+      if (!endpoint) return;
       await axiosInstance.post(endpoint, payload);
       toast.success("Asset created.");
       setShowForm(false);
       await mutate();
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Field-level errors for form
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data; // Validation errors for form
       }
-      toast.error("Failed to create asset.");
+      toast.error(extractErrorMessage(error));
     }
   };
 
-  useEffect(() => {
-    setShowForm(false); // Reset when switching asset type
-  }, [type]);
+  if (!type || !(type in assetEndpointsMap)) {
+    return (
+      <div className="p-6 text-destructive text-sm font-medium bg-destructive/10 rounded-md">
+        Invalid asset type.
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">

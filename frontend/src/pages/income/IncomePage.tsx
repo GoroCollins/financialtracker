@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
-import { axiosInstance } from "../../authentication/AuthenticationService";
+import { axiosInstance } from "../../services/apiClient";
 import { incomeTypeMap, IncomeTypeKey } from "../../constants/incomeTypes";
 import { IncomeFormValues, IncomeResponse, Currency } from "../../utils/zodSchemas";
 import IncomeForm from "../../income/IncomeForm";
@@ -18,13 +18,57 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 const IncomePage = () => {
   const { type } = useParams<{ type: IncomeTypeKey }>();
   const [showForm, setShowForm] = useState(false);
   const formRef = useRef<{ reset: () => void }>(null);
+  const isInvalid = !type || !(type in incomeTypeMap);
+  const { endpoint, label, route } = isInvalid
+    ? { endpoint: "", label: "", route: "" }
+    : incomeTypeMap[type as IncomeTypeKey];
+  const {
+    data: incomes,
+    mutate,
+    isLoading,
+  } = useSWR<IncomeResponse[]>(isInvalid ? null : endpoint, fetcher);
 
-  if (!type || !(type in incomeTypeMap)) {
+  const {
+    data: rawCurrencies,
+    isLoading: currenciesLoading,
+  } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
+
+  const currencies = useMemo(() => {
+    if (!Array.isArray(rawCurrencies)) return [];
+    return [...rawCurrencies].sort((a, b) => {
+      if (a.is_local === b.is_local) return a.code.localeCompare(b.code);
+      return a.is_local ? -1 : 1;
+    });
+  }, [rawCurrencies]);
+
+useEffect(() => {
+  setTimeout(() => setShowForm(false), 0);
+}, [type]);
+
+  const handleCreate = async (payload: IncomeFormValues) => {
+    try {
+      await axiosInstance.post(endpoint, payload);
+      toast.success("Income created.");
+      await mutate();
+      setShowForm(false);
+      formRef.current?.reset();
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data;
+      }
+      toast.error(extractErrorMessage(error));
+    }
+  };
+
+  if (isInvalid) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="w-full max-w-md border-destructive/40">
@@ -42,46 +86,6 @@ const IncomePage = () => {
       </div>
     );
   }
-
-  const { endpoint, label, route } = incomeTypeMap[type];
-
-  const {
-    data: incomes,
-    mutate,
-    isLoading,
-  } = useSWR<IncomeResponse[]>(endpoint, fetcher);
-
-  const {
-    data: rawCurrencies,
-    isLoading: currenciesLoading,
-  } = useSWR<Currency[]>("/api/currencies/currencies", fetcher);
-
-  const currencies = useMemo(() => {
-    if (!Array.isArray(rawCurrencies)) return [];
-    return [...rawCurrencies].sort((a, b) => {
-      if (a.is_local === b.is_local) return a.code.localeCompare(b.code);
-      return a.is_local ? -1 : 1;
-    });
-  }, [rawCurrencies]);
-
-  const handleCreate = async (payload: IncomeFormValues) => {
-    try {
-      await axiosInstance.post(endpoint, payload);
-      toast.success("Income created.");
-      await mutate();
-      setShowForm(false);
-      formRef.current?.reset();
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // return validation errors to the form
-      }
-      toast.error("Failed to create income.");
-    }
-  };
-
-  useEffect(() => {
-    setShowForm(false); // close the form on type change
-  }, [type]);
 
   return (
     <div className="container mx-auto max-w-4xl py-8">

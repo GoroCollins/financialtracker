@@ -9,7 +9,7 @@ import {
   CurrencyFormData,
   ExchangeRate,
 } from "../utils/zodSchemas";
-import { axiosInstance } from "../authentication/AuthenticationService";
+import { axiosInstance } from "../services/apiClient";
 import { fetcher } from "../utils/swrFetcher";
 import ConfirmModal from "../ConfirmModal";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../utils/errorHandler"; 
 
 export default function CurrencyDetail() {
   const { code } = useParams<{ code: string }>();
@@ -71,12 +73,10 @@ export default function CurrencyDetail() {
       toast.success("Currency deleted successfully");
       setShowModal(false);
       navigate("/currencies");
-    } catch (error: any) {
+    } catch (error: unknown) {
       setShowModal(false);
-      const responseData = error?.response?.data;
-      if (Array.isArray(responseData)) toast.error(responseData[0]);
-      else if (responseData?.detail) toast.error(responseData.detail);
-      else toast.error("Failed to delete currency");
+      const message = extractErrorMessage(error as AxiosError);
+      toast.error(message);
     }
   };
 
@@ -218,11 +218,9 @@ export default function CurrencyDetail() {
                                     } as current`
                                   );
                                   await refreshRates();
-                                } catch (error: any) {
-                                  const msg =
-                                    error?.response?.data?.detail ||
-                                    "Failed to update current status";
-                                  toast.error(msg);
+                                } catch (error: unknown) {
+                                  const message = extractErrorMessage(error as AxiosError);
+                                  toast.error(message);
                                   await refreshRates();
                                 }
                               }}

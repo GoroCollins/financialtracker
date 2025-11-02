@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { fetcher } from "../../utils/swrFetcher";
 import { AssetFormValues, Currency } from "../../utils/zodSchemas";
 import AssetForm from "../../financial_assets/AssetForm";
-import { axiosInstance } from "../../authentication/AuthenticationService";
+import { axiosInstance } from "../../services/apiClient";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
 import {
   Card,
@@ -16,23 +16,22 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 const EditAsset = () => {
   const { type, id } = useParams<{ type: AssetTypeKey; id: string }>();
   const navigate = useNavigate();
 
-  if (!type || !(type in assetEndpointsMap) || !id) {
-    return (
-      <div className="p-6 text-center text-destructive">
-        Invalid asset type or ID.
-      </div>
-    );
-  }
-
-  const { endpoint, singularLabel, route } = assetEndpointsMap[type];
+  const validType = type && type in assetEndpointsMap ? type : undefined;
+  const endpoint = validType ? assetEndpointsMap[validType].endpoint : undefined;
+  const singularLabel = validType
+    ? assetEndpointsMap[validType].singularLabel
+    : "Asset";
+  const route = validType ? assetEndpointsMap[validType].route : "/";
 
   const { data: asset, isLoading } = useSWR<AssetFormValues>(
-    `${endpoint}${id}/`,
+    validType && id ? `${endpoint}${id}/` : null,
     fetcher
   );
 
@@ -52,17 +51,27 @@ const EditAsset = () => {
   const handleUpdate = async (
     payload: AssetFormValues
   ): Promise<Record<string, string[]> | undefined> => {
+    if (!validType || !id || !endpoint) return;
     try {
       await axiosInstance.put(`${endpoint}${id}/`, payload);
       toast.success(`${singularLabel} updated.`);
       navigate(route);
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Return validation errors
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data;
       }
-      toast.error(`Failed to update ${singularLabel}.`);
+      toast.error(extractErrorMessage(error));
     }
   };
+
+    if (!validType || !id) {
+    return (
+      <div className="p-6 text-center text-destructive">
+        Invalid asset type or ID.
+      </div>
+    );
+  }
 
   if (isLoading || currenciesLoading) {
     return (
@@ -89,7 +98,7 @@ const EditAsset = () => {
 
         <CardContent>
           <AssetForm
-            assetType={type}
+            assetType={validType}
             initialValues={asset}
             onSubmit={handleUpdate}
             isEditing

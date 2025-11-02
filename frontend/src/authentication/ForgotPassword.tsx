@@ -3,13 +3,15 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "./AuthenticationService";
+import { axiosInstance } from "../services/apiClient";
 import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {Form, FormField, FormItem, FormLabel, FormMessage, FormControl, FormDescription,} from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Mail } from "lucide-react";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../utils/errorHandler"; 
 
 
 // ✅ Zod schema
@@ -41,8 +43,9 @@ export default function ForgotPasswordForm() {
         "If an account with that email exists, a password reset link has been sent."
       );
       form.reset();
-    } catch (error: any) {
-      setErrorMessage("Something went wrong. Please try again later.");
+    } catch (error) {
+      const message = extractErrorMessage(error as AxiosError);
+      setErrorMessage(message);
     }
   };
 

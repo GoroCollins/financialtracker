@@ -1,7 +1,7 @@
-import path from "path"
-import tailwindcss from "@tailwindcss/vite"
-import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,7 +15,7 @@ export default defineConfig({
   host: '0.0.0.0',  // Listen on all network interfaces
   port: 8075,        // Ensure the port is correct
   allowedHosts: [
-      'financialtracker.skylim.local', // 👈 add your custom host here
+      'financialtracker.skylim.local', // hostname for local network access
     ],
     // host: true, // optional, allows access via network
   },

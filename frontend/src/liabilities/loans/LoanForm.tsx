@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle } from "react";
 import useSWR from "swr";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoanFormSchema, LoanFormValues, InterestTypeItem, Currency, LoanFormInput } from "../../utils/zodSchemas";
 import { fetcher } from "../../utils/swrFetcher"; 
@@ -24,11 +24,10 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
     handleSubmit,
     reset,
     control,
-    watch,
     setError,
     clearErrors,
     formState: { errors },
-  } = useForm<LoanFormInput, any, LoanFormValues>({
+  } = useForm<LoanFormInput, unknown, LoanFormValues>({
     resolver: zodResolver(LoanFormSchema),
     defaultValues: initialValues as LoanFormInput,
   });
@@ -40,9 +39,9 @@ const LoanForm = forwardRef<LoanFormHandle, Props>(({ onSubmit, initialValues },
     reset: () => reset(),
   }));
 
-  const selectedInterestType = watch("interest_type");
-  const loanDate = watch("loan_date");
-  const repaymentDate = watch("repayment_date");
+  const selectedInterestType = useWatch({ control, name: "interest_type" });
+  const loanDate = useWatch({ control, name: "loan_date" });
+  const repaymentDate = useWatch({ control, name: "repayment_date" });
 
   // Custom validation: repayment date must be after loan date
   useEffect(() => {

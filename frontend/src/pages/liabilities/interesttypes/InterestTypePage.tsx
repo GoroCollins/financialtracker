@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import useSWR from "swr";
-import { axiosInstance } from "../../../authentication/AuthenticationService";
+import { axiosInstance } from "../../../services/apiClient";
 import { fetcher } from "../../../utils/swrFetcher";
 import { toast } from "sonner";
 import InterestTypeForm, { InterestTypeFormHandle } from "../../../liabilities/interesttypes/InterestTypeForm";

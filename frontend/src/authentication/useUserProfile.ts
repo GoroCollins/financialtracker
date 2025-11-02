@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { axiosInstance } from './AuthenticationService'
+import { axiosInstance } from "../services/apiClient";
 
 interface UserProfileData {
   username: string;

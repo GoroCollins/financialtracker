@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useMemo } from "react";
+import { useForm, useWatch, Control } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
-import { axiosInstance } from "./AuthenticationService";
-import axios from "axios";
+import { axiosInstance } from "../services/apiClient";
 import { useNavigate } from "react-router-dom";
 import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
 import { Eye, EyeOff, Clipboard } from "lucide-react";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../utils/errorHandler";
 
 interface SignupFormData {
   email: string;
@@ -26,34 +27,47 @@ const signupRequest = async (url: string, { arg }: { arg: SignupFormData }) => {
   try {
     const response = await axiosInstance.post(url, arg);
     return response.data;
-  } catch (error: any) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data?.non_field_errors?.[0] || "Signup failed.");
-    }
-    throw new Error("An unknown error occurred.");
+  } catch (error) {
+    const message = extractErrorMessage(error as AxiosError);
+    throw new Error(message);
   }
 };
 
+// ✅ A small hook wrapper to safely "watch" a single field
+const usePasswordWatch = (control: Control<SignupFormData>) => {
+  const password1 = useWatch({ control, name: "password1" });
+  const password2 = useWatch({ control, name: "password2" });
+  return { password1, password2 };
+};
+
+
 const Signup = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<SignupFormData>();
+  const { register, handleSubmit, formState: { errors }, control, setValue } = useForm<SignupFormData>();
+  const { password1, password2 } = usePasswordWatch(control);
   const [suggestedPassword, setSuggestedPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
-  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string }>({
-      score: 0,
-      label: "Weak",
-  });
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
+  // const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string }>({
+  //     score: 0,
+  //     label: "Weak",
+  // });
+  // const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
 
-  const password = watch("password1");
-  useEffect(() => {
-  handlePasswordChange(password || "");
-}, [password]);
-  const confirmPassword = watch("password2");
 
   const { trigger, isMutating } = useSWRMutation("/dj-rest-auth/registration/", signupRequest);
+
+const { score, label } = useMemo(
+  () => estimatePasswordStrength(password1 || ""),
+  [password1]
+);
+
+const passwordSuggestions = useMemo(
+  () => getPasswordSuggestions(password1 || ""),
+  [password1]
+);
+const passwordStrength = { score, label };
 
   const handleGeneratePassword = () => {
     const newPassword = generatePassword();
@@ -68,12 +82,12 @@ const Signup = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handlePasswordChange = (value: string) => {
-      const strength = estimatePasswordStrength(value);
-      const suggestions = getPasswordSuggestions(value);
-      setPasswordStrength(strength);
-      setPasswordSuggestions(suggestions);
-  };
+  // const handlePasswordChange = (value: string) => {
+  //     const strength = estimatePasswordStrength(value);
+  //     const suggestions = getPasswordSuggestions(value);
+  //     setPasswordStrength(strength);
+  //     setPasswordSuggestions(suggestions);
+  // };
 
   const onSubmit = async (formData: SignupFormData) => {
     if (formData.password1 !== formData.password2) {
@@ -88,8 +102,9 @@ const Signup = () => {
         duration: 4000,
       });
       navigate("/verify-email");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "An unknown error occurred.");
+    } catch (error) {
+      const message = extractErrorMessage(error as AxiosError);
+      toast.error(message);
     }
   };
 
@@ -128,7 +143,7 @@ const Signup = () => {
             })}
             onChange={(e) => {
               setValue("password1", e.target.value);
-              handlePasswordChange(e.target.value);
+              // handlePasswordChange(e.target.value);
             }}
             className="w-full p-2 border rounded"
           />
@@ -179,7 +194,7 @@ const Signup = () => {
             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
 
-          {confirmPassword && password !== confirmPassword && (
+          {password2 && password1 !== password2 && (
             <p className="text-red-500 text-sm mt-1">Passwords do not match.</p>
           )}
         </div>

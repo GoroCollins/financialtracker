@@ -2,8 +2,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useState } from "react";
-import { axiosInstance } from "../authentication/AuthenticationService";
+// import { useState } from "react";
+import { axiosInstance } from "../services/apiClient";
 import { ExchangeRateSchema, ExchangeRateFormData } from "../utils/zodSchemas";
 
 import {
@@ -17,11 +17,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../utils/errorHandler";
 
 export default function CreateExchangeRate() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState("");
+  // const [errorMessage, setErrorMessage] = useState("");
 
   const form = useForm<ExchangeRateFormData>({
     resolver: zodResolver(ExchangeRateSchema),
@@ -39,15 +41,9 @@ export default function CreateExchangeRate() {
       toast.success("Exchange rate saved!");
       form.reset();
       navigate(`/currencies/${code}`);
-    } catch (error: any) {
-      if (error.response?.data) {
-        const messages = Object.values(error.response.data).flat().join(" ");
-        setErrorMessage(messages);
-        toast.error(messages || "Failed to save exchange rate");
-      } else {
-        setErrorMessage("An unexpected error occurred.");
-        toast.error("An unexpected error occurred.");
-      }
+    } catch (error: unknown) {
+        const message = extractErrorMessage(error as AxiosError);
+        toast.error(message)
     }
   };
 
@@ -57,11 +53,11 @@ export default function CreateExchangeRate() {
         Create Exchange Rate for {code}
       </h2>
 
-      {errorMessage && (
+      {/* {errorMessage && (
         <div className="bg-red-100 text-red-700 p-2 rounded mb-4">
           {errorMessage}
         </div>
-      )}
+      )} */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

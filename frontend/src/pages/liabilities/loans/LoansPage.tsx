@@ -2,12 +2,14 @@ import { useState, useRef } from "react";
 import useSWR from "swr";
 import { fetcher } from "../../../utils/swrFetcher";
 import { LoanItem, LoanFormValues } from "../../../utils/zodSchemas";
-import { axiosInstance } from "../../../authentication/AuthenticationService";
+import { axiosInstance } from "../../../services/apiClient";
 import LoanForm, { LoanFormHandle } from "../../../liabilities/loans/LoanForm";
 import LoanList from "../../../liabilities/loans/LoanList";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../../../utils/errorHandler";
 
 const LoanPage = () => {
   const [showForm, setShowForm] = useState(false);
@@ -22,12 +24,19 @@ const LoanPage = () => {
       await mutate();
       formRef.current?.reset();
       setShowForm(false);
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Return field-level errors to the form
+    } catch (error) {
+        const axiosError = error as AxiosError<Record<string, string[] | string>>;
+        const status = axiosError.response?.status;
+
+        if (status === 400 && axiosError.response?.data) {
+          // Return field-level validation errors to LoanForm
+          return axiosError.response.data as Record<string, string[]>;
+        }
+
+        // For other errors — use global handler
+        const message = extractErrorMessage(axiosError);
+        toast.error(message);
       }
-      toast.error("Failed to create loan.");
-    }
   };
 
   return (

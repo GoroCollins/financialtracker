@@ -1,3 +1,9 @@
+export interface IncomeTypeConfig {
+  label: string;
+  endpoint: string;
+  route: string;
+}
+
 export const incomeTypeMap = {
   earned: {
     label: "Earned Income",
@@ -14,6 +20,6 @@ export const incomeTypeMap = {
     endpoint: "/api/income/passiveincome/",
     route: "/income/passive",
   },
-};
+} satisfies Record<string, IncomeTypeConfig>;
 
 export type IncomeTypeKey = keyof typeof incomeTypeMap;

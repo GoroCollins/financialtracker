@@ -2,12 +2,14 @@ import { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../../utils/swrFetcher";
-import { axiosInstance } from "../../../authentication/AuthenticationService";
+import { axiosInstance } from "../../../services/apiClient";
 import LoanForm, { LoanFormHandle } from "../../../liabilities/loans/LoanForm";
 import { LoanFormValues, LoanItem } from "../../../utils/zodSchemas";
 import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../../../utils/errorHandler";
 
 const EditLoan = () => {
   const { id } = useParams();
@@ -31,12 +33,19 @@ const EditLoan = () => {
       toast.success("Loan updated successfully.");
       await mutate();
       navigate(`/liabilities/loans/${id}`);
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response.data) {
-        return error.response.data; // Return validation errors
+    } catch (error) {
+        const axiosError = error as AxiosError<Record<string, string[] | string>>;
+        const status = axiosError.response?.status;
+
+        if (status === 400 && axiosError.response?.data) {
+          // Return field-level validation errors to LoanForm
+          return axiosError.response.data as Record<string, string[]>;
+        }
+
+        // For other errors — use global handler
+        const message = extractErrorMessage(axiosError);
+        toast.error(message);
       }
-      toast.error("Failed to update loan.");
-    }
   };
 
   if (isLoading)

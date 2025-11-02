@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { useState } from "react";
 import { toast } from "sonner";
 import { fetcher } from "../../utils/swrFetcher";
-import { axiosInstance } from "../../authentication/AuthenticationService";
+import { axiosInstance } from "../../services/apiClient";
 import { assetEndpointsMap, AssetTypeKey } from "../../constants/assetsTypes";
 import {
   Card,
@@ -22,6 +22,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, Trash2, Pencil, ArrowLeft } from "lucide-react";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 interface AssetDetail {
   id: number;
@@ -44,28 +46,44 @@ const AssetDetails = () => {
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
 
-  if (!type || !(type in assetEndpointsMap) || !id) {
+    // ✅ Define safe defaults before hooks
+  const validType = type && type in assetEndpointsMap ? type : undefined;
+  const endpoint = validType ? assetEndpointsMap[validType].endpoint : undefined;
+  const route = validType ? assetEndpointsMap[validType].route : "/";
+  const singularLabel = validType
+    ? assetEndpointsMap[validType].singularLabel
+    : "Asset";
+
+  const assetDetailUrl =
+    validType && id ? `${endpoint}${id}/` : null; 
+  const { data: asset, isLoading } = useSWR<AssetDetail>(
+    assetDetailUrl,
+    fetcher
+  );
+
+  const handleDelete = async () => {
+    if (!assetDetailUrl) return;
+    try {
+      await axiosInstance.delete(assetDetailUrl);
+      toast.success(`${singularLabel} deleted.`);
+      navigate(route);
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data;
+      }
+      toast.error(extractErrorMessage(error));
+      // toast.error(`Failed to delete ${singularLabel}.`);
+    }
+  };
+
+    if (!validType || !id) {
     return (
       <div className="p-6 text-center text-destructive">
         Invalid asset type or ID.
       </div>
     );
   }
-
-  const { endpoint, route, singularLabel } = assetEndpointsMap[type];
-  const assetDetailUrl = `${endpoint}${id}/`;
-
-  const { data: asset, isLoading } = useSWR<AssetDetail>(assetDetailUrl, fetcher);
-
-  const handleDelete = async () => {
-    try {
-      await axiosInstance.delete(assetDetailUrl);
-      toast.success(`${singularLabel} deleted.`);
-      navigate(route);
-    } catch {
-      toast.error(`Failed to delete ${singularLabel}.`);
-    }
-  };
 
   if (isLoading) {
     return (

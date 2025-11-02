@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
 import { IncomeTypeKey, incomeTypeMap } from "../../constants/incomeTypes";
 import { IncomeResponse } from "../../utils/zodSchemas";
-import { axiosInstance } from "../../authentication/AuthenticationService";
+import { axiosInstance } from "../../services/apiClient";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -27,13 +27,40 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 const IncomeDetails = () => {
   const { type, id } = useParams<{ type: IncomeTypeKey; id: string }>();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  if (!type || !id || !(type in incomeTypeMap)) {
+  const isInvalid = !type || !id || !(type in incomeTypeMap);
+  const { endpoint, route, label } = isInvalid
+    ? { endpoint: "", route: "", label: "" }
+    : incomeTypeMap[type as IncomeTypeKey];
+  const { data: income, isLoading } = useSWR<IncomeResponse>(
+    isInvalid ? null : `${endpoint}${id}/`,
+    fetcher
+  );
+
+  const handleDelete = async () => {
+    try {
+      await axiosInstance.delete(`${endpoint}${id}/`);
+      toast.success("Income deleted.");
+      navigate(route);
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data;
+      }
+      toast.error(extractErrorMessage(error));
+    } finally {
+      setOpen(false);
+    }
+  };
+
+  if (isInvalid) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="w-full max-w-md border-destructive/40">
@@ -50,26 +77,8 @@ const IncomeDetails = () => {
         </Card>
       </div>
     );
-  }
-
-  const { endpoint, route, label } = incomeTypeMap[type];
-  const { data: income, isLoading } = useSWR<IncomeResponse>(
-    `${endpoint}${id}/`,
-    fetcher
-  );
-
-  const handleDelete = async () => {
-    try {
-      await axiosInstance.delete(`${endpoint}${id}/`);
-      toast.success("Income deleted.");
-      navigate(route);
-    } catch {
-      toast.error("Failed to delete income.");
-    } finally {
-      setOpen(false);
-    }
   };
-
+  
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-3xl py-8">

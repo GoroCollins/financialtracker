@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
@@ -6,18 +6,33 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { changePassword } from "./ChangePasswordUtility";
 import { ChangePasswordSchema, FormInputs } from "../utils/zodSchemas";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription} from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from '@/components/ui/progress';
-import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
+import { Progress } from "@/components/ui/progress";
+import {
+  estimatePasswordStrength,
+  getPasswordSuggestions,
+} from "./PasswordUtility";
+// import { AxiosError } from "axios";
 
 const ChangePassword: React.FC = () => {
-  const navigate = useNavigate()
-  const [showOld, setShowOld] = useState(false)
-  const [showNew, setShowNew] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string }>({
+  const navigate = useNavigate();
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<{
+    score: number;
+    label: string;
+  }>({
     score: 0,
     label: "Weak",
   });
@@ -32,32 +47,51 @@ const ChangePassword: React.FC = () => {
     },
   });
 
-  const toggleVisibility = (setter: React.Dispatch<React.SetStateAction<boolean>>) =>
-    setter(prev => !prev);
+  const toggleVisibility = (
+    setter: React.Dispatch<React.SetStateAction<boolean>>
+  ) => setter((prev) => !prev);
+
+  // const onSubmit = async (data: FormInputs) => {
+  //   try {
+  //     await changePassword(data.oldPassword, data.newPassword)
+  //     toast.success("Password changed successfully. Redirecting to logout...")
+
+  //     form.reset()
+  //     setTimeout(() => navigate("/logout"), 3000)
+  //   } catch (err) {
+  //     const error = err as AxiosError<{ old_password?: string[]; detail?: string }>
+  //     const serverError = error?.response?.data
+
+  //     if (serverError?.old_password?.length) {
+  //       toast.error(serverError.old_password[0])
+  //     } else if (serverError?.detail) {
+  //       toast.error(serverError.detail)
+  //     } else if (error?.message === "Network Error") {
+  //       toast.error("Network error: Please check your internet connection.")
+  //     } else {
+  //       toast.error("An unexpected error occurred. Please try again.")
+  //     }
+  //   }
+  // };
 
   const onSubmit = async (data: FormInputs) => {
     try {
-      await changePassword(data.oldPassword, data.newPassword)
-      toast.success("Password changed successfully. Redirecting to logout...")
+      await changePassword(data.oldPassword, data.newPassword);
+      toast.success("Password changed successfully. Redirecting to logout...");
 
-      form.reset()
-      setTimeout(() => navigate("/logout"), 3000)
-    } catch (err: any) {
-      const serverError = err?.response?.data
-
-      if (serverError?.old_password?.length) {
-        toast.error(serverError.old_password[0])
-      } else if (serverError?.detail) {
-        toast.error(serverError.detail)
-      } else if (err?.message === "Network Error") {
-        toast.error("Network error: Please check your internet connection.")
+      form.reset();
+      setTimeout(() => navigate("/logout"), 3000);
+    } catch (error) {
+      // Because `ChangePasswordUtility` already extracts & throws a structured error
+      if (typeof error === "object" && error && "message" in error) {
+        toast.error((error as { message: string }).message);
       } else {
-        toast.error("An unexpected error occurred. Please try again.")
+        toast.error("An unexpected error occurred. Please try again.");
       }
     }
-  }
+  };
 
-    const handlePasswordChange = (value: string) => {
+  const handlePasswordChange = (value: string) => {
     const strength = estimatePasswordStrength(value);
     const suggestions = getPasswordSuggestions(value);
     setPasswordStrength(strength);
@@ -71,7 +105,9 @@ const ChangePassword: React.FC = () => {
   };
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-card border rounded-xl shadow-sm">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Change Password</h2>
+      <h2 className="text-2xl font-semibold mb-6 text-center">
+        Change Password
+      </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Current Password */}
@@ -84,7 +120,7 @@ const ChangePassword: React.FC = () => {
                 <div className="relative">
                   <FormControl>
                     <Input
-                      type={showOld ? 'text' : 'password'}
+                      type={showOld ? "text" : "password"}
                       placeholder="Enter current password"
                       {...field}
                     />
@@ -110,13 +146,13 @@ const ChangePassword: React.FC = () => {
                 <div className="relative">
                   <FormControl>
                     <Input
-                      type={showNew ? 'text' : 'password'}
+                      type={showNew ? "text" : "password"}
                       placeholder="Enter new password"
                       {...field}
-                       onChange={(e) => {
-                          form.setValue("newPassword", e.target.value);
-                          handlePasswordChange(e.target.value);
-                        }}
+                      onChange={(e) => {
+                        form.setValue("newPassword", e.target.value);
+                        handlePasswordChange(e.target.value);
+                      }}
                     />
                   </FormControl>
                   <span
@@ -126,29 +162,30 @@ const ChangePassword: React.FC = () => {
                     {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
                   </span>
                 </div>
-              {/* 🔹 Password Strength Bar */}
-              <div className="mt-2">
-                <Progress
-                  value={(passwordStrength.score / 4) * 100}
-                  className={`h-2 ${getProgressColor()}`}
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Strength: {passwordStrength.label}
-                </p>
-              </div>
+                {/* 🔹 Password Strength Bar */}
+                <div className="mt-2">
+                  <Progress
+                    value={(passwordStrength.score / 4) * 100}
+                    className={`h-2 ${getProgressColor()}`}
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Strength: {passwordStrength.label}
+                  </p>
+                </div>
 
-              {/* 🔹 Suggestions */}
-              {passwordSuggestions.length > 0 && (
-                <ul className="mt-2 text-xs text-muted-foreground list-disc pl-5">
-                  {passwordSuggestions.map((suggestion, index) => (
-                    <li key={index}>{suggestion}</li>
-                  ))}
-                </ul>
-              )}
-              <FormMessage />
-              <FormDescription>
-                Password must have at least 8 characters, a number, and a mix of upper/lowercase letters.
-              </FormDescription>
+                {/* 🔹 Suggestions */}
+                {passwordSuggestions.length > 0 && (
+                  <ul className="mt-2 text-xs text-muted-foreground list-disc pl-5">
+                    {passwordSuggestions.map((suggestion, index) => (
+                      <li key={index}>{suggestion}</li>
+                    ))}
+                  </ul>
+                )}
+                <FormMessage />
+                <FormDescription>
+                  Password must have at least 8 characters, a number, and a mix
+                  of upper/lowercase letters.
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -162,7 +199,7 @@ const ChangePassword: React.FC = () => {
                 <div className="relative">
                   <FormControl>
                     <Input
-                      type={showConfirm ? 'text' : 'password'}
+                      type={showConfirm ? "text" : "password"}
                       placeholder="Re-enter new password"
                       {...field}
                     />
@@ -178,15 +215,15 @@ const ChangePassword: React.FC = () => {
               </FormItem>
             )}
           />
-           {/* Action Buttons */}
+          {/* Action Buttons */}
           <div className="flex justify-between mt-6">
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Changing...' : 'Change Password'}
+              {form.formState.isSubmitting ? "Changing..." : "Change Password"}
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/userprofile')}
+              onClick={() => navigate("/userprofile")}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -196,7 +233,7 @@ const ChangePassword: React.FC = () => {
         </form>
       </Form>
     </div>
-  )
-}
+  );
+};
 
 export default ChangePassword;

@@ -1,19 +1,31 @@
-import { axiosInstance}  from "./AuthenticationService";  // Use the existing axios instance
+import axios, { AxiosResponse } from "axios";
+import { axiosInstance } from "../services/apiClient";
+import { extractErrorMessage } from "../utils/errorHandler";
 
-export const changePassword = async (oldPassword: string, newPassword: string) => {
+interface PasswordChangeResponse {
+  detail: string;
+}
+
+export const changePassword = async (
+  oldPassword: string,
+  newPassword: string
+): Promise<PasswordChangeResponse> => {
   try {
-    const response = await axiosInstance.post(`/dj-rest-auth/password/change/`, {
-      old_password: oldPassword,
-      new_password1: newPassword,
-      new_password2: newPassword,  // Assuming both new_password1 and new_password2 for confirmation
-    });
-    
-    if (response.status === 200) {
-      return response.data;
-    } else {
-      throw new Error("Password change failed.");
-    }
-  } catch (error: any) {
-    throw error;
+    const response: AxiosResponse<PasswordChangeResponse> = await axiosInstance.post(
+      "/dj-rest-auth/password/change/",
+      {
+        old_password: oldPassword,
+        new_password1: newPassword,
+        new_password2: newPassword, // confirmation
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    const message = extractErrorMessage(error);
+    throw {
+      message,
+      status: axios.isAxiosError(error) ? error.response?.status : undefined,
+    };
   }
 };

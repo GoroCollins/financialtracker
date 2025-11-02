@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { fetcher } from "../../utils/swrFetcher";
-import { axiosInstance } from "../../authentication/AuthenticationService";
-import { expensesTypeMap, ExpenseTypeKey } from "../../constants/expensesTypes";
+import { axiosInstance } from "../../services/apiClient";
+import { expensesTypeMap, ExpenseTypeKey, ExpenseTypeConfig } from "../../constants/expensesTypes";
 import {
   ExpensesFormValues,
   ExpensesResponse,
@@ -24,26 +24,21 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, X } from "lucide-react";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import { AxiosError } from "axios";
 
 const ExpensesPage = () => {
   const { type } = useParams<{ type: ExpenseTypeKey }>();
   const [showForm, setShowForm] = useState(false);
   const formRef = useRef<{ reset: () => void }>(null);
 
-  if (!type || !(type in expensesTypeMap)) {
-    return (
-      <div className="p-4 text-destructive text-sm">
-        Invalid expense type.
-      </div>
-    );
-  }
-
-  const { endpoint, label, route } = expensesTypeMap[type];
+  const isInvalid = !type || !(type in expensesTypeMap);
+  const config: ExpenseTypeConfig | null = !isInvalid ? expensesTypeMap[type] : null;
 
   const { data: expenses, mutate, isLoading } = useSWR<ExpensesResponse[]>(
-    endpoint,
-    fetcher
-  );
+  !isInvalid ? config?.endpoint : null,
+  fetcher
+);
 
   const { data: rawCurrencies, isLoading: currenciesLoading } = useSWR<
     Currency[]
@@ -57,30 +52,40 @@ const ExpensesPage = () => {
     });
   }, [rawCurrencies]);
 
+useEffect(() => {
+  setTimeout(() => setShowForm(false), 0);
+}, [type]);
+
   const handleCreate = async (payload: ExpensesFormValues) => {
+    if (!config) return;
     try {
-      await axiosInstance.post(endpoint, payload);
+      await axiosInstance.post(config.endpoint, payload);
       toast.success("Expense created.");
       await mutate();
       setShowForm(false);
       formRef.current?.reset();
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response.data) {
-        return error.response.data;
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<Record<string, string[]>>;
+      if (axiosError.response?.status === 400 && axiosError.response.data) {
+        return axiosError.response.data; // Validation errors
       }
-      toast.error("Failed to create expense.");
+      toast.error(extractErrorMessage(error));
     }
   };
 
-  useEffect(() => {
-    setShowForm(false);
-  }, [type]);
+  if (isInvalid || !config) {
+    return (
+      <div className="p-4 text-destructive text-sm">
+        Invalid expense type.
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <Card className="shadow-md">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-semibold">{label}</CardTitle>
+          <CardTitle className="text-2xl font-semibold">{config.label}</CardTitle>
           {!showForm ? (
             <Button onClick={() => setShowForm(true)} className="gap-2">
               <Plus className="w-4 h-4" /> Create Expense
@@ -127,7 +132,7 @@ const ExpensesPage = () => {
               <Skeleton className="h-6 w-1/2" />
             </div>
           ) : (
-            <ExpensesList expenses={expenses || []} basePath={route} />
+            <ExpensesList expenses={expenses || []} basePath={config.route} />
           )}
         </CardContent>
       </Card>

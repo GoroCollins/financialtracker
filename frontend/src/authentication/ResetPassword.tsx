@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useNavigate } from "react-router-dom";
@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/card";
 import {Field, FieldError, FieldGroup, FieldLabel, FieldDescription,} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { axiosInstance } from "./AuthenticationService";
+import { axiosInstance } from "../services/apiClient";
 import { estimatePasswordStrength, getPasswordSuggestions } from "./PasswordUtility";
 import { Progress } from "@/components/ui/progress";
+import { AxiosError } from "axios";
+import { extractErrorMessage } from "../utils/errorHandler";
 
 // ✅ Define form validation schema
 const resetPasswordSchema = z
@@ -45,6 +47,11 @@ const ResetPasswordForm: React.FC = () => {
   const [strengthLabel, setStrengthLabel] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
+  const passwordValue = useWatch({
+  control: form.control,
+  name: "new_password1",
+});
+
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       form.setValue("new_password1", value);
@@ -64,9 +71,10 @@ const ResetPasswordForm: React.FC = () => {
 
       alert("Password reset successful. You can now log in with your new password.");
       navigate("/login");
-    } catch (error: any) {
-      console.error("Password reset failed:", error.response?.data || error);
-      alert("Password reset failed. Please try again or request a new reset link.");
+    } catch (error) {
+      const message = extractErrorMessage(error as AxiosError);
+      alert(`Password reset failed: ${message}`);
+      console.error("Password reset failed:", message);
     }
   };
 
@@ -104,7 +112,7 @@ const ResetPasswordForm: React.FC = () => {
                 Password must have at least 8 characters, a number, and a mix of upper/lowercase letters.
               </FieldDescription>
               {/* ✅ Password strength meter */}
-              {form.watch("new_password1") && (
+              {passwordValue && (
                 <div className="mt-2 space-y-1">
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>Strength: {strengthLabel}</span>
