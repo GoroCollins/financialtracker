@@ -33,7 +33,6 @@ const signupRequest = async (url: string, { arg }: { arg: SignupFormData }) => {
   }
 };
 
-// ✅ A small hook wrapper to safely "watch" a single field
 const usePasswordWatch = (control: Control<SignupFormData>) => {
   const password1 = useWatch({ control, name: "password1" });
   const password2 = useWatch({ control, name: "password2" });
@@ -49,11 +48,6 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
-  // const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string }>({
-  //     score: 0,
-  //     label: "Weak",
-  // });
-  // const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
 
 
   const { trigger, isMutating } = useSWRMutation("/dj-rest-auth/registration/", signupRequest);
@@ -78,20 +72,13 @@ const passwordStrength = { score, label };
   const handleCopyPassword = () => {
     navigator.clipboard.writeText(suggestedPassword);
     setCopied(true);
-    toast.success("Password copied to clipboard"); // ✅ feedback on copy
+    toast.success("Password copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // const handlePasswordChange = (value: string) => {
-  //     const strength = estimatePasswordStrength(value);
-  //     const suggestions = getPasswordSuggestions(value);
-  //     setPasswordStrength(strength);
-  //     setPasswordSuggestions(suggestions);
-  // };
-
   const onSubmit = async (formData: SignupFormData) => {
     if (formData.password1 !== formData.password2) {
-      toast.error("Passwords do not match."); // ✅ validation error toast
+      toast.error("Passwords do not match.");
       return;
     }
 
@@ -143,7 +130,6 @@ const passwordStrength = { score, label };
             })}
             onChange={(e) => {
               setValue("password1", e.target.value);
-              // handlePasswordChange(e.target.value);
             }}
             className="w-full p-2 border rounded"
           />
