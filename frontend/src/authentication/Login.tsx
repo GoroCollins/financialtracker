@@ -135,8 +135,6 @@ const Login: React.FC = () => {
                     type="button"
                     variant="secondary"
                     onClick={() => navigate(-1)}
-                    // className="bg-background text-foreground"
-                    // className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
                     Back
                   </Button>
