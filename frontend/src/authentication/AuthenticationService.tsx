@@ -1,5 +1,4 @@
 import React, {
-  // createContext,
   useMemo,
   useState,
   useEffect,
@@ -26,20 +25,10 @@ interface ErrorResponse {
   old_password?: string[];
 }
 
-// export interface AuthContextType {
-//   login: (username: string, password: string) => Promise<{ user: User }>;
-//   logout: () => Promise<void>;
-//   isAuthenticated: boolean;
-//   user: User | null;
-//   loading: boolean;
-//   refreshUser: () => Promise<{ user: User } | void>;
-// }
-
 const ACCESS_TOKEN_COOKIE = "jwt-auth";
 const REFRESH_TOKEN_COOKIE = "refresh-auth";
 const CSRF_COOKIE_NAME = "csrftoken";
 
-// export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -120,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const value = useMemo(
     () => ({ login, logout, isAuthenticated, user, loading, refreshUser }),
-    [isAuthenticated, user, loading] // ✅ fixed exhaustive-deps
+    [isAuthenticated, user, loading]
   );
 
   return (
