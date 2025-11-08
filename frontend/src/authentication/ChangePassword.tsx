@@ -22,7 +22,6 @@ import {
   estimatePasswordStrength,
   getPasswordSuggestions,
 } from "./PasswordUtility";
-// import { AxiosError } from "axios";
 
 const ChangePassword: React.FC = () => {
   const navigate = useNavigate();
@@ -50,29 +49,6 @@ const ChangePassword: React.FC = () => {
   const toggleVisibility = (
     setter: React.Dispatch<React.SetStateAction<boolean>>
   ) => setter((prev) => !prev);
-
-  // const onSubmit = async (data: FormInputs) => {
-  //   try {
-  //     await changePassword(data.oldPassword, data.newPassword)
-  //     toast.success("Password changed successfully. Redirecting to logout...")
-
-  //     form.reset()
-  //     setTimeout(() => navigate("/logout"), 3000)
-  //   } catch (err) {
-  //     const error = err as AxiosError<{ old_password?: string[]; detail?: string }>
-  //     const serverError = error?.response?.data
-
-  //     if (serverError?.old_password?.length) {
-  //       toast.error(serverError.old_password[0])
-  //     } else if (serverError?.detail) {
-  //       toast.error(serverError.detail)
-  //     } else if (error?.message === "Network Error") {
-  //       toast.error("Network error: Please check your internet connection.")
-  //     } else {
-  //       toast.error("An unexpected error occurred. Please try again.")
-  //     }
-  //   }
-  // };
 
   const onSubmit = async (data: FormInputs) => {
     try {
