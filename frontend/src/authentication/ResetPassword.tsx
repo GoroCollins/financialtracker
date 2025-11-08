@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { AxiosError } from "axios";
 import { extractErrorMessage } from "../utils/errorHandler";
 
-// ✅ Define form validation schema
+
 const resetPasswordSchema = z
   .object({
     new_password1: z
