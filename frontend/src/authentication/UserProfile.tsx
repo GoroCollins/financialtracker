@@ -12,6 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import PhoneInput from 'react-phone-number-input';
+import { extractErrorMessage } from '@/utils/errorHandler';
+import { AxiosError } from "axios";
+
+
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
 const UserProfile: React.FC = () => {
@@ -32,7 +36,6 @@ const UserProfile: React.FC = () => {
       form.setValue("middle_name", user.middle_name || "");
       form.setValue("last_name", user.last_name);
       form.setValue("phone_number", user.phone_number || "");
-      // setPreviewImage(user.profile_image || null);
       startTransition(() => {
         setPreviewImage(user.profile_image || null);
     });
@@ -59,9 +62,10 @@ const UserProfile: React.FC = () => {
       await mutate();
       await refreshUser();
       navigate("/home");
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      toast.error("Failed to update profile");
+    } catch (error) {
+      const message = extractErrorMessage(error as AxiosError);
+      console.error("Error updating profile:", message);
+      toast.error(message);
     }
   };
 
