@@ -14,7 +14,6 @@ import { AxiosError } from "axios";
 import { extractErrorMessage } from "../utils/errorHandler"; 
 
 
-// ✅ Zod schema
 const forgotPasswordSchema = z.object({
   email: z
     .string()
@@ -49,7 +48,6 @@ export default function ForgotPasswordForm() {
     }
   };
 
-    // ⏳ Redirect to homepage after success
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => navigate("/"), 3000);
