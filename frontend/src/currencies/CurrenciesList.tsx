@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { axiosInstance } from "../services/apiClient";
@@ -6,6 +6,7 @@ import { Currency } from "../utils/zodSchemas";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 const fetcher = (url: string) => axiosInstance.get(url).then((res) => res.data);
 const PAGE_SIZE = 15;
@@ -21,23 +22,46 @@ export default function CurrenciesList() {
 
   const [activeTab, setActiveTab] = useState<"local" | "other">(defaultTab);
   const [otherPage, setOtherPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   useEffect(() => {
     setSearchParams({ tab: activeTab });
     localStorage.setItem("activeCurrencyTab", activeTab);
   }, [activeTab, setSearchParams]);
 
-  if (error) return <div className="text-red-600">Error loading currencies.</div>;
-  if (!currencies) return <div>Loading...</div>;
+  const localCurrency = currencies?.find((c) => c.is_local);
+  const otherCurrencies = currencies?.filter((c) => !c.is_local) ?? [];
 
-  const localCurrency = currencies.find((c) => c.is_local);
-  const otherCurrencies = currencies.filter((c) => !c.is_local);
+  const filteredOthers = useMemo(() => {
+    const term = debouncedSearchTerm.toLowerCase();
+    return otherCurrencies.filter(
+      (c) =>
+        c.code.toLowerCase().includes(term) ||
+        c.description.toLowerCase().includes(term)
+    );
+  }, [otherCurrencies, debouncedSearchTerm]);
 
   const start = (otherPage - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
-  const paginatedOthers = otherCurrencies.slice(start, end);
-  const hasNext = end < otherCurrencies.length;
+  const paginatedOthers = filteredOthers.slice(start, end);
+  const hasNext = end < filteredOthers.length;
   const hasPrev = otherPage > 1;
+
+  useEffect(() => setOtherPage(1), [searchTerm]);
+
+  if (error) {
+    return <div className="text-red-600">Error loading currencies.</div>;
+  }
+
+  if (!currencies) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -50,7 +74,7 @@ export default function CurrenciesList() {
         onValueChange={(value) => setActiveTab((value as "local" | "other") || "local")}
         className="space-y-4"
       >
-        {/* Local Currency Accordion */}
+        {/* Local Currency */}
         <AccordionItem value="local">
           <AccordionTrigger>Local Currency</AccordionTrigger>
           <AccordionContent>
@@ -64,22 +88,37 @@ export default function CurrenciesList() {
                     {localCurrency.code} — {localCurrency.description} (Local)
                   </Link>
                 ) : (
-                  <div className="text-red-600 font-medium">⚠️ No local currency defined.</div>
+                  <div className="text-red-600 font-medium">
+                    ⚠️ No local currency defined.
+                  </div>
                 )}
               </CardContent>
             </Card>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Other Currencies Accordion */}
+        {/* Other Currencies */}
         <AccordionItem value="other">
-          <AccordionTrigger>Other Currencies ({otherCurrencies.length})</AccordionTrigger>
+          <AccordionTrigger>
+            Other Currencies ({otherCurrencies.length})
+          </AccordionTrigger>
           <AccordionContent>
             <Card className="border border-muted mt-2">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">Available Currencies</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* 🔍 Search */}
+                <div className="mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Search by code or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
+
                 {paginatedOthers.length > 0 ? (
                   <ul className="space-y-2">
                     {paginatedOthers.map((currency) => (
@@ -97,11 +136,13 @@ export default function CurrenciesList() {
                     ))}
                   </ul>
                 ) : (
-                  <div className="text-muted-foreground">No other currencies found.</div>
+                  <div className="text-muted-foreground">
+                    No other currencies found.
+                  </div>
                 )}
 
-                {/* Pagination Controls */}
-                {otherCurrencies.length > PAGE_SIZE && (
+                {/* Pagination */}
+                {filteredOthers.length > PAGE_SIZE && (
                   <div className="flex justify-between items-center pt-4">
                     <Button
                       variant="outline"
@@ -111,7 +152,9 @@ export default function CurrenciesList() {
                     >
                       Previous
                     </Button>
-                    <span className="text-sm text-muted-foreground">Page {otherPage}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Page {otherPage}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"
