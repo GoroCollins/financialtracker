@@ -1,4 +1,3 @@
-// import "tailwindcss";
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
@@ -17,8 +16,8 @@ const errorHandler = (error: Error, info: ErrorInfo) => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary FallbackComponent={ErrorPage} // Use the ErrorPage as the fallback UI
-    onError={errorHandler} // Optional error logging
-    onReset={() => (location.href = '/')} // Reset logic to reload the app
+    onError={errorHandler}
+    onReset={() => (location.href = '/')}
     >
     <App />
     </ErrorBoundary>
