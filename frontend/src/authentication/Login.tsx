@@ -135,13 +135,11 @@ const Login: React.FC = () => {
                     type="button"
                     variant="secondary"
                     onClick={() => navigate(-1)}
+                    // className="bg-background text-foreground"
+                    // className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
                     Back
                   </Button>
-                  <div className="tw-:bg-blue-500 tw-:text-white tw-:p-4 tw-:rounded-lg">
-  Tailwind is working if this box is blue.
-</div>
-
                 </div>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link

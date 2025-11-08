@@ -1,7 +1,7 @@
-import "tailwindcss";
-import './index.css';
+// import "tailwindcss";
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import './index.css';
 import App from './App.tsx';
 import { ErrorInfo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
