@@ -2,10 +2,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useUserProfile } from "./authentication/useUserProfile";
 import placeholderProfileImage from "./assets/placeholder.png";
-import {NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, 
-  NavigationMenuTrigger,} from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
+import { HoverDropdown } from "./menuHover";
 
 const Navbar = () => {
   const { profile, isLoading, isError } = useUserProfile();
@@ -32,93 +31,53 @@ const Navbar = () => {
       </Link>
 
       {/* Middle horizontal menu */}
-      <NavigationMenu>
-        <NavigationMenuList className="flex space-x-4">
-          {/* Income */}
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="flex items-center gap-1">Income</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="flex flex-col p-2 space-y-2">
-                <NavigationMenuLink asChild>
-                  <Link to="/income/earned">Earned Income</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/income/portfolio">Portfolio Income</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/income/passive">Passive Income</Link>
-                </NavigationMenuLink>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+        {/* Income */}
+          <HoverDropdown
+            label="Income"
+            items={[
+              { label: "Earned Income", to: "/income/earned" },
+              { label: "Portfolio Income", to: "/income/portfolio" },
+              { label: "Passive Income", to: "/income/passive" },
+            ]}
+          />
 
           {/* Assets */}
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="flex items-center gap-1">Assets</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="flex flex-col p-2 space-y-2">
-                <NavigationMenuLink asChild>
-                  <Link to="/assets/liquid">Liquid Assets</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/assets/equity">Equities</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/assets/investment">Investment Accounts</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/assets/retirement">Retirement Accounts</Link>
-                </NavigationMenuLink>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          <HoverDropdown
+            label="Assets"
+            items={[
+              { label: "Liquid Assets", to: "/assets/liquid" },
+              { label: "Equities", to: "/assets/equity" },
+              { label: "Investment Accounts", to: "/assets/investment" },
+              { label: "Retirement Accounts", to: "/assets/retirement" },
+            ]}
+          />
 
           {/* Expenses */}
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="flex items-center gap-1">Expenses</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="flex flex-col p-2 space-y-2">
-                <NavigationMenuLink asChild>
-                  <Link to="/expenses/fixed">Fixed Expenses</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/expenses/variable">Variable Expenses</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/expenses/discretionary">Discretionary Expenses</Link>
-                </NavigationMenuLink>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          <HoverDropdown
+            label="Expenses"
+            items={[
+              { label: "Fixed Expenses", to: "/expenses/fixed" },
+              { label: "Variable Expenses", to: "/expenses/variable" },
+              { label: "Discretionary Expenses", to: "/expenses/discretionary" },
+            ]}
+          />
 
           {/* Liabilities */}
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="flex items-center gap-1">Liabilities</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="flex flex-col p-2 space-y-2">
-                <NavigationMenuLink asChild>
-                  <Link to="/liabilities/loans">Loans</Link>
-                </NavigationMenuLink>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          <HoverDropdown
+            label="Liabilities"
+            items={[
+              { label: "Loans", to: "/liabilities/loans" },
+            ]}
+          />
 
           {/* Settings */}
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="flex items-center gap-1">Settings</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="flex flex-col p-2 space-y-2">
-                <NavigationMenuLink asChild>
-                  <Link to="/currencies">Currencies</Link>
-                </NavigationMenuLink>
-                <NavigationMenuLink asChild>
-                  <Link to="/liabilities/interesttypes">Interest Types</Link>
-                </NavigationMenuLink>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+          <HoverDropdown
+            label="Settings"
+            items={[
+              { label: "Currencies", to: "/currencies" },
+              { label: "Interest Types", to: "/liabilities/interesttypes" },
+            ]}
+          />
 
       {/* Right side profile */}
       <div className="flex items-center gap-3">
