@@ -5,11 +5,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
 import Layout from "./Layout";
+import NavigatorSetter from "./services/navigatorSetter";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Router>
+        <NavigatorSetter />
         <AuthProvider>{/* Wrap your entire app inside AuthProvider */}
           <Layout>
             <RoutesConfig />
