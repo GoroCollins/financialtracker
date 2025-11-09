@@ -36,7 +36,10 @@ export default function CurrenciesList() {
   }, [activeTab, setSearchParams]);
 
   const localCurrency = currencies?.find((c) => c.is_local);
-  const otherCurrencies = currencies?.filter((c) => !c.is_local) ?? [];
+  const otherCurrencies = useMemo(
+  () => currencies?.filter((c) => !c.is_local) ?? [],
+  [currencies]
+);
 
   const filteredOthers = useMemo(() => {
     const term = debouncedSearchTerm.toLowerCase();
@@ -53,7 +56,10 @@ export default function CurrenciesList() {
   const hasNext = end < filteredOthers.length;
   const hasPrev = otherPage > 1;
 
-  useEffect(() => setOtherPage(1), [searchTerm]);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setSearchTerm(e.target.value);
+  setOtherPage(1);
+};
 
   if (error) {
     return <div className="text-red-600">Error loading currencies.</div>;
@@ -114,7 +120,7 @@ export default function CurrenciesList() {
                     type="text"
                     placeholder="Search by code or description..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                     className="max-w-sm"
                   />
                 </div>
