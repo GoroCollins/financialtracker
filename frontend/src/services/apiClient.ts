@@ -9,14 +9,12 @@ const ACCESS_TOKEN_COOKIE = "jwt-auth";
 const REFRESH_TOKEN_COOKIE = "refresh-auth";
 const CSRF_COOKIE_NAME = "csrftoken";
 
-// const csrfToken = Cookies.get(CSRF_COOKIE_NAME);
 
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-    // "X-CSRFToken": csrfToken || "",
   },
 });
 
@@ -26,12 +24,11 @@ axiosInstance.interceptors.request.use(
     const csrfToken = Cookies.get(CSRF_COOKIE_NAME);
     const accessToken = Cookies.get(ACCESS_TOKEN_COOKIE);
 
-    // if (csrfToken) config.headers["X-CSRFToken"] = csrfToken;
     if (csrfToken) {
       config.headers = config.headers ?? {};
       config.headers["X-CSRFToken"] = csrfToken;
     }
-    // if (accessToken) config.headers["Authorization"] = `Bearer ${accessToken}`;
+
     if (accessToken) {
       config.headers = config.headers ?? {};
       config.headers["Authorization"] = `Bearer ${accessToken}`;
@@ -60,10 +57,8 @@ axiosInstance.interceptors.response.use(
 
           if (data.access) {
             Cookies.set(ACCESS_TOKEN_COOKIE, data.access);
-            // axiosInstance.defaults.headers["Authorization"] = `Bearer ${data.access}`;
             axiosInstance.defaults.headers = axiosInstance.defaults.headers ?? {};
             axiosInstance.defaults.headers["Authorization"] = `Bearer ${data.access}`;
-            // originalRequest.headers["Authorization"] = `Bearer ${data.access}`;
             originalRequest.headers = originalRequest.headers ?? {};
             originalRequest.headers["Authorization"] = `Bearer ${data.access}`;
             return axiosInstance(originalRequest);
