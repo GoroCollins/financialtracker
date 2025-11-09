@@ -1,7 +1,7 @@
 import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,11 +12,16 @@ export default defineConfig({
     },
   },
   server: {
-  host: '0.0.0.0',  // Listen on all network interfaces
-  port: 8075,        // Ensure the port is correct
-  allowedHosts: [
-      'financialtracker.skylim.local', // hostname for local network access
-    ],
-    // host: true, // optional, allows access via network
+    host: '0.0.0.0',  // Listen on all network interfaces
+    port: 8075,        // Ensure the port is correct
+    allowedHosts: [
+        'financialtracker.skylim.local', // hostname for local network access
+      ],
+      // host: true, // optional, allows access via network
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/tests/setup.ts",
   },
 })
