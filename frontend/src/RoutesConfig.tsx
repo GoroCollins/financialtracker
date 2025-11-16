@@ -5,7 +5,7 @@ import PublicHomePage from "./PublicHome";
 import Login from "./authentication/Login";
 import VerifyEmailNotice from "./authentication/VerifyEmailNotice";
 import ConfirmEmail from "./authentication/ConfirmEmail";
-import Home from "./Home";
+import Home from "./home/Home";
 import { ProtectedRoute } from "./ProtectedRoutes";
 import Logout from "./authentication/Logout";
 import UserProfile from "./authentication/UserProfile";
