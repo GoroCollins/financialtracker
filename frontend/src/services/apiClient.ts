@@ -55,8 +55,9 @@ axiosInstance.interceptors.response.use(
             refresh: refreshToken,
           });
 
-          if (data.access) {
+          if (data.access && data.refresh) {
             Cookies.set(ACCESS_TOKEN_COOKIE, data.access);
+            Cookies.set(REFRESH_TOKEN_COOKIE, data.refresh);
             axiosInstance.defaults.headers = axiosInstance.defaults.headers ?? {};
             axiosInstance.defaults.headers["Authorization"] = `Bearer ${data.access}`;
             originalRequest.headers = originalRequest.headers ?? {};
